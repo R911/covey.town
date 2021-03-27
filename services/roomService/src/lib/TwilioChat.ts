@@ -63,8 +63,9 @@ export default class TwilioChat implements IChatClient {
       this._twilioAccountSid,
       this._twilioApiKeySID,
       this._twilioApiKeySecret,
+      {identity},
     );
-    token.identity = identity;
+
     token.addGrant(chatGrant);
 
     return token.toJwt();
