@@ -5,6 +5,8 @@ import Player from '../types/Player';
 import PlayerSession from '../types/PlayerSession';
 import TwilioVideo from './TwilioVideo';
 import IVideoClient from './IVideoClient';
+import IChatClient from './IChatClient';
+import TwilioChat from './TwilioChat';
 
 const friendlyNanoID = customAlphabet('1234567890ABCDEF', 8);
 
@@ -59,6 +61,9 @@ export default class CoveyTownController {
   /** The videoClient that this CoveyTown will use to provision video resources * */
   private _videoClient: IVideoClient = TwilioVideo.getInstance();
 
+  /** The chatClient that this CoveyTown will use to provision chat resources * */
+  private _chatClient: IChatClient = TwilioChat.getInstance();
+
   /** The list of CoveyTownListeners that are subscribed to events in this town * */
   private _listeners: CoveyTownListener[] = [];
 
@@ -94,6 +99,9 @@ export default class CoveyTownController {
 
     // Create a video token for this user to join this town
     theSession.videoToken = await this._videoClient.getTokenForTown(this._coveyTownID, newPlayer.id);
+
+    // Create a chat token for this user to join this town
+    theSession.chatToken = await this._chatClient.getChatToken(newPlayer.id);
 
     // Notify other players that this player has joined
     this._listeners.forEach((listener) => listener.onPlayerJoined(newPlayer));

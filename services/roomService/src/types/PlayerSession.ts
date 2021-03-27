@@ -15,6 +15,9 @@ export default class PlayerSession {
   /** The secret token that allows this client to access our video resources for this town * */
   private _videoToken?: string;
 
+  /** The secret token that allows this client to access our chat for this town * */
+  private _chatToken?:string;
+
   constructor(player: Player) {
     this._player = player;
     // Session tokens are randomly generated strings
@@ -24,6 +27,7 @@ export default class PlayerSession {
   set videoToken(value: string | undefined) {
     this._videoToken = value;
   }
+
 
   get videoToken(): string | undefined {
     return this._videoToken;
@@ -35,5 +39,13 @@ export default class PlayerSession {
 
   get sessionToken(): string {
     return this._sessionToken;
+  }
+
+  set chatToken(value: string | undefined) {
+    this._chatToken = value;
+  }
+
+  get chatToken():string | undefined {
+    return this._chatToken;
   }
 }
