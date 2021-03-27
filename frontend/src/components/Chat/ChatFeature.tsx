@@ -20,6 +20,7 @@ import {
     useToast
   } from '@chakra-ui/react'; 
 import { nanoid } from 'nanoid';
+import { createTrue } from 'typescript';
 
 export default function ChatFeature(): JSX.Element {
     const [typedMessage, setTypedMessage] = useState<string>('');
@@ -40,15 +41,17 @@ export default function ChatFeature(): JSX.Element {
     return (
         <form>
             <Box borderWidth="1px" borderRadius="lg">
-                <Heading p="4" as="h2" size="lg">Chat</Heading>
+                <Heading bg="teal" p="4" as="h2" size="lg" >Chat</Heading>
 
-                <Box borderWidth="1px" borderRadius="lg">
+                <Box borderWidth="1px" borderRadius="lg" data-scrollbar="true">
                     { sentMessages }
                 </Box>
 
                 <Stack pl={6} mt={1} spacing={1}>
-                    { sampleParticipants.map(
-                        (participants) => <Checkbox key={ nanoid() }> {participants} </Checkbox>)}
+                    <Select placeholder="Send Message To: ">
+                        { sampleParticipants.map(
+                            (participants) => <option key={nanoid()}> {participants} </option>) }
+                    </Select>
                 </Stack>
 
                 <Box borderWidth="1px" borderRadius="lg">
@@ -58,8 +61,8 @@ export default function ChatFeature(): JSX.Element {
                                onChange={event => setTypedMessage(event.target.value)}
                         />
                         <Button data-testid='sendMessageButton' 
-                                colorScheme="pink"
-                                onClick={() => sendMessage(typedMessage)}> Send </Button>
+                                colorScheme="teal"
+                                onClick={() => sendMessage(typedMessage)}> Send Message </Button>
                     </Flex>
                 </Box>
             </Box>
