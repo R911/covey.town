@@ -39,7 +39,6 @@ export default function MeetingNotes(): JSX.Element {
                     { meetingNotes }
                 </Box>
 
-
                 <Box borderWidth="1px" borderRadius="lg">
                     <Flex p="4">
                         <Input name="meetingNote" placeholder="Type here"
