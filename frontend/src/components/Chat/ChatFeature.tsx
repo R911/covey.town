@@ -43,7 +43,6 @@ export default function ChatFeature(): JSX.Element {
         setTypedMessage('')
     }
 
-
     return (
         <form>
             <Divider orientation="horizontal" />
@@ -52,7 +51,7 @@ export default function ChatFeature(): JSX.Element {
 
                 <Box borderWidth="1px" borderRadius="lg" data-scrollbar="true">
                     <Text fontSize="md" as="kbd"> { `To: ${sentMessages?.receivers }`} </Text>
-                    <Text fontSize="sm" > { sentMessages?.bodyOfMessage } </Text>
+                    <Text fontSize="sm"> { sentMessages?.bodyOfMessage } </Text>
                 </Box>
                 
                 <Box borderWidth="1px" borderRadius="lg">
