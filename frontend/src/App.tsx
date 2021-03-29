@@ -27,6 +27,7 @@ import TownsServiceClient, { TownJoinResponse } from './classes/TownsServiceClie
 import Video from './classes/Video/Video';
 
 import ChatFeature from './components/Chat/ChatFeature';
+import MeetingNotes from './components/Notes/MeetingNotes';
 
 type CoveyAppUpdate =
   | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean, sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
@@ -228,6 +229,7 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
       <div>
         <WorldMap />
         <ChatFeature />
+        <MeetingNotes />
         <VideoOverlay preferredMode="fullwidth" />
       </div>
     );

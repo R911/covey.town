@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Divider,
   Flex,
   FormControl,
   FormLabel,
@@ -13,6 +14,7 @@ import {
   Table,
   TableCaption,
   Tbody,
+  Text,
   Td,
   Th,
   Thead,
@@ -23,22 +25,27 @@ import { nanoid } from 'nanoid';
 import ChatClient from 'twilio-chat';
 import assert from 'assert';
 import { Channel } from 'twilio-chat/lib/channel';
-import { Message } from 'twilio/lib/twiml/MessagingResponse';
+import { Message as TwilioMessage } from 'twilio/lib/twiml/MessagingResponse';
+import Message from './Message';
 import Video from '../../classes/Video/Video';
 
 export default function ChatFeature(): JSX.Element {
   const [typedMessage, setTypedMessage] = useState<string>('');
-  const [sentMessages, setChatMessages] = useState<string>('');
+  const [sentMessages, setChatMessages] = useState<Message>();
+  const [participantToSendTo, setParticipantToSendTo] = useState<string>('');
   const [chatClient, setChatClient] = useState<ChatClient>();
   const [channel, setChannel] = useState<Channel>();
+
   // Get participants from backend
+  const WholeGroup = 'Everyone';
   const sampleParticipants = ['Alice', 'Bob', 'Charles', 'Dave'];
 
   // Send messages to database
   // Will need to display messages cleaner
   // Need to send messages to only the participants checked in the checkbox
   function sendMessage(messageToSend: string) {
-    setChatMessages(` ${sentMessages} ${messageToSend} `);
+    const message: Message = new Message(messageToSend, participantToSendTo);
+    setChatMessages(message);
     setTypedMessage('');
     channel?.sendMessage(messageToSend);
   }
@@ -50,13 +57,17 @@ export default function ChatFeature(): JSX.Element {
       await setChatClient(() => client);
     };
 
-    const handleMessageAdded = (message: Message) => {
+    const handleMessageAdded = (message: TwilioMessage) => {
       console.log(message.body);
     };
 
     const joinChannel = async (newChannel: Channel) => {
       if (newChannel.status !== 'joined') {
         await newChannel.join();
+        const messageList = (await newChannel.getMessages()).items;
+        messageList.forEach(message => {
+          console.log(message.body);
+        });
       }
       newChannel.on('messageAdded', handleMessageAdded);
     };
@@ -91,22 +102,40 @@ export default function ChatFeature(): JSX.Element {
 
   return (
     <form>
+      <Divider orientation='horizontal' />
       <Box borderWidth='1px' borderRadius='lg'>
-        <Heading p='4' as='h2' size='lg'>
+        <Heading bg='teal' p='4' as='h2' size='lg'>
           Chat
         </Heading>
 
-        <Box borderWidth='1px' borderRadius='lg'>
-          {sentMessages}
+        <Box borderWidth='1px' borderRadius='lg' data-scrollbar='true'>
+          <Text fontSize='md' as='kbd'>
+            {' '}
+            {`To: ${sentMessages?.receivers}`}{' '}
+          </Text>
+          <Text fontSize='sm'> {sentMessages?.bodyOfMessage} </Text>
         </Box>
 
-        <Stack pl={6} mt={1} spacing={1}>
-          {sampleParticipants.map(participants => (
-            <Checkbox key={nanoid()}> {participants} </Checkbox>
-          ))}
-        </Stack>
-
         <Box borderWidth='1px' borderRadius='lg'>
+          <Stack>
+            <Select
+              placeholder='Send Message To: '
+              onChange={event => setParticipantToSendTo(event.target.value)}
+              value={participantToSendTo}>
+              <option key='whole' value='Everyone'>
+                {' '}
+                {WholeGroup}{' '}
+              </option>
+
+              {sampleParticipants.map(participant => (
+                <option key={nanoid()} value={participant}>
+                  {' '}
+                  {participant}{' '}
+                </option>
+              ))}
+            </Select>
+          </Stack>
+
           <Flex p='4'>
             <Input
               name='chatMessage'
@@ -116,14 +145,16 @@ export default function ChatFeature(): JSX.Element {
             />
             <Button
               data-testid='sendMessageButton'
-              colorScheme='pink'
+              colorScheme='teal'
               onClick={() => sendMessage(typedMessage)}>
               {' '}
-              Send{' '}
+              Send Message{' '}
             </Button>
           </Flex>
         </Box>
       </Box>
+
+      <Divider orientation='horizontal' />
     </form>
   );
 }
