@@ -13,6 +13,7 @@ export interface TownJoinRequest {
   userName: string;
   /** ID of the town that the player would like to join * */
   coveyTownID: string;
+  capacity?: number;
 }
 
 /**
@@ -42,6 +43,7 @@ export interface TownJoinResponse {
 export interface TownCreateRequest {
   friendlyName: string;
   isPubliclyListed: boolean;
+  capacity?: number;
 }
 
 /**
@@ -171,7 +173,7 @@ export async function townCreateHandler(requestData: TownCreateRequest): Promise
       message: 'FriendlyName must be specified',
     };
   }
-  const newTown = townsStore.createTown(requestData.friendlyName, requestData.isPubliclyListed);
+  const newTown = townsStore.createTown(requestData.friendlyName, requestData.isPubliclyListed, requestData.capacity);
   return {
     isOK: true,
     response: {

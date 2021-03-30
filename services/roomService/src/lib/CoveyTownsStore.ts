@@ -37,8 +37,8 @@ export default class CoveyTownsStore {
       }));
   }
 
-  createTown(friendlyName: string, isPubliclyListed: boolean): CoveyTownController {
-    const newTown = new CoveyTownController(friendlyName, isPubliclyListed);
+  createTown(friendlyName: string, isPubliclyListed: boolean, capacity?: number): CoveyTownController {
+    const newTown = new CoveyTownController(friendlyName, isPubliclyListed, capacity);
     this._towns.push(newTown);
     return newTown;
   }

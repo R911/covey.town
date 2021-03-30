@@ -20,9 +20,6 @@ function mockCoveyListener(): CoveyTownListener {
     onPlayerJoined(newPlayer: Player) {
       mockCoveyListenerOtherFns(newPlayer);
     },
-    onPlayerPrivilegeUpdate(updatedPlayer: Player){
-      mockCoveyListenerOtherFns(updatedPlayer);
-    },
   };
 }
 
