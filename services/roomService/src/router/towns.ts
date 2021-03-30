@@ -4,6 +4,7 @@ import io from 'socket.io';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import {
+  playerUpdateHandler,
   townCreateHandler, townDeleteHandler,
   townJoinHandler,
   townListHandler,
@@ -96,6 +97,33 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         isPubliclyListed: req.body.isPubliclyListed,
         friendlyName: req.body.friendlyName,
         coveyTownPassword: req.body.coveyTownPassword,
+      });
+      res.status(StatusCodes.OK)
+        .json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({
+          message: 'Internal server error, please see log in server for more details',
+        });
+    }
+  });
+
+  /**
+   * Update a player
+   */
+  app.patch('/player/:userId', BodyParser.json(), async (req, res) => {
+    try {
+      const result = await playerUpdateHandler({
+        coveyTownID: req.body.townID,
+        coveyTownPassword: req.body.townPassword,
+        userId: req.params.userId,
+        userPassword: req.body.userPassword,
+        playerId: req.body.playerId,
+        videoAccess: req.body.videoAccess,
+        audioAccess: req.body.audioAccess,
+        chatAccess: req.body.chatAccess,
+        isAdmin: req.body.isAdmin,
       });
       res.status(StatusCodes.OK)
         .json(result);

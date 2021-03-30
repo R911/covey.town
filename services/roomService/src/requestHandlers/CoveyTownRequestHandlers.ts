@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { Socket } from 'socket.io';
 import Player from '../types/Player';
-import { CoveyTownList, UserLocation } from '../CoveyTypes';
+import { CoveyTownList, UserLocation, UserPrivileges } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import CoveyTownsStore from '../lib/CoveyTownsStore';
 
@@ -77,6 +77,18 @@ export interface TownUpdateRequest {
   coveyTownPassword: string;
   friendlyName?: string;
   isPubliclyListed?: boolean;
+}
+
+export interface PlayerUpdateRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+  playerId: string;
+  videoAccess?: boolean;
+  audioAccess?: boolean;
+  chatAccess?: boolean;
+  isAdmin?: boolean;
 }
 
 /**
@@ -169,6 +181,16 @@ export async function townUpdateHandler(requestData: TownUpdateRequest): Promise
 
 }
 
+export async function playerUpdateHandler(requestData: PlayerUpdateRequest): Promise<ResponseEnvelope<Record<string, null>>> {
+  const townStore = CoveyTownsStore.getInstance();
+  const success = townStore.updatePlayer(requestData.coveyTownID, requestData.coveyTownPassword, requestData.userId, requestData.userPassword, requestData.playerId, requestData.videoAccess, requestData.audioAccess, requestData.chatAccess, requestData.isAdmin); 
+  return {
+    isOK: success,
+    response: {},
+    message: !success ? 'Invalid password or update values specified. Please double check your user update password.' : undefined,
+  };
+}
+
 /**
  * An adapter between CoveyTownController's event interface (CoveyTownListener)
  * and the low-level network communication protocol
@@ -189,6 +211,9 @@ function townSocketAdapter(socket: Socket): CoveyTownListener {
     onTownDestroyed() {
       socket.emit('townClosing');
       socket.disconnect(true);
+    },
+    onPlayerPrivilegeUpdate(updatedPlayer: Player){
+      socket.emit('playerPrivilegeUpdate', updatedPlayer);
     },
   };
 }

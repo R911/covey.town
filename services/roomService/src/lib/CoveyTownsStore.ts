@@ -1,5 +1,5 @@
 import CoveyTownController from './CoveyTownController';
-import { CoveyTownList } from '../CoveyTypes';
+import { CoveyTownList, UserPrivileges } from '../CoveyTypes';
 
 function passwordMatches(provided: string, expected: string): boolean {
   if (provided === expected) {
@@ -65,6 +65,37 @@ export default class CoveyTownsStore {
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       this._towns = this._towns.filter(town => town !== existingTown);
       existingTown.disconnectAllPlayers();
+      return true;
+    }
+    return false;
+  }
+
+  updatePlayer(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string, playerId: string, videoAccess?: boolean, audioAccess?: boolean, chatAccess?: boolean, isAdmin?:boolean): boolean{
+    const existingTown = this.getControllerForTown(coveyTownID); 
+    if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
+      const user = existingTown.getPlayer(userId);
+      if (!user?.privilages.admin){
+        return false;
+      }
+      // if(user.password !== userPassword) return false;
+      const modifiedPlayer = existingTown.getPlayer(playerId);
+      if (modifiedPlayer===undefined){
+        return false;
+      }
+      const userPrivilege = modifiedPlayer.privilages;
+      if (videoAccess !== undefined){
+        userPrivilege.video = videoAccess;
+      }
+      if (audioAccess !== undefined){
+        userPrivilege.audio = audioAccess;
+      }
+      if (chatAccess !== undefined){
+        userPrivilege.chat = chatAccess;
+      }
+      if (isAdmin !== undefined){
+        userPrivilege.admin = isAdmin;
+      }
+      modifiedPlayer.updatePrivilages(userPrivilege);
       return true;
     }
     return false;

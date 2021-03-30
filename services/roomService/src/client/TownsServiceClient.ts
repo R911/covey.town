@@ -79,6 +79,16 @@ export interface TownUpdateRequest {
   isPubliclyListed?: boolean;
 }
 
+export interface PlayerUpdateRequest {
+  userId: string,
+  userPassword: string,
+  playerId: string,
+  videoAccess: boolean,
+  audioAccess: boolean,
+  chatAccess: boolean,
+  isAdmin: boolean,
+}
+
 /**
  * Envelope that wraps any response from the server
  */
@@ -142,6 +152,11 @@ export default class TownsServiceClient {
 
   async joinTown(requestData: TownJoinRequest): Promise<TownJoinResponse> {
     const responseWrapper = await this._axios.post('/sessions', requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async modifyPlayer(requestData: PlayerUpdateRequest): Promise<void> {
+    const responseWrapper = await this._axios.patch<ResponseEnvelope<void>>(`/player/${requestData.userId}`, requestData);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 

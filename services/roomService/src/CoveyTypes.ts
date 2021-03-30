@@ -7,3 +7,9 @@ export type UserLocation = {
 };
 export type CoveyTownList = { friendlyName: string; coveyTownID: string; currentOccupancy: number; maximumOccupancy: number }[];
 
+export type UserPrivileges = {
+  audio: boolean,
+  chat: boolean,
+  video: boolean,
+  admin: boolean
+};

@@ -1,5 +1,6 @@
 import { customAlphabet, nanoid } from 'nanoid';
-import { UserLocation } from '../CoveyTypes';
+import { listeners } from 'process';
+import { UserLocation, UserPrivileges } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import Player from '../types/Player';
 import PlayerSession from '../types/PlayerSession';
@@ -13,7 +14,6 @@ const friendlyNanoID = customAlphabet('1234567890ABCDEF', 8);
  * can occur (e.g. joining a town, moving, leaving a town)
  */
 export default class CoveyTownController {
-
   get capacity(): number {
     return this._capacity;
   }
@@ -122,6 +122,11 @@ export default class CoveyTownController {
     this._listeners.forEach((listener) => listener.onPlayerMoved(player));
   }
 
+  updatePlayerPrivileges(player: Player, privileges: UserPrivileges): void {
+    player.updatePrivilages(privileges);
+    this._listeners.forEach((listener) => listener.onPlayerPrivilegeUpdate(player));
+  }
+
   /**
    * Subscribe to events from this town. Callers should make sure to
    * unsubscribe when they no longer want those events by calling removeTownListener
@@ -154,5 +159,9 @@ export default class CoveyTownController {
 
   disconnectAllPlayers(): void {
     this._listeners.forEach((listener) => listener.onTownDestroyed());
+  }
+
+  getPlayer(userId: string): Player| undefined {
+    return this.players.find(p => p.id === userId);
   }
 }
