@@ -121,4 +121,18 @@ export default class CoveyTownsStore {
     return false;
   }
 
+  emptyTown(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string): boolean{
+    const existingTown = this.getControllerForTown(coveyTownID); 
+    if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
+      const user = existingTown.getPlayer(userId);
+      if (!user?.privilages.admin){
+        return false;
+      }
+      // if(user.password !== userPassword) return false;
+      existingTown.disconnectAllPlayers();
+      return true;
+    }
+    return false;
+  }
+
 }

@@ -99,6 +99,13 @@ export interface BanPlayerRequest {
   playerId: string;
 }
 
+export interface EmptyRoomRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+}
+
 /**
  * Envelope that wraps any response from the server
  */
@@ -208,6 +215,18 @@ export async function banPlayerHandler(requestData:BanPlayerRequest) : Promise<R
     message: !success ? 'Invalid password or player values specified. Please double check your user password.' : undefined,
   };
 }
+
+export async function emptyRoomHandler(requestData:EmptyRoomRequest) : Promise<ResponseEnvelope<Record<string, null>>> {
+  const townStore = CoveyTownsStore.getInstance();
+  const success = townStore.emptyTown(requestData.coveyTownID, requestData.coveyTownPassword, requestData.userId, requestData.userPassword); 
+  return {
+    isOK: success,
+    response: {},
+    message: !success ? 'Invalid password or user values specified. Please double check your user password.' : undefined,
+  };
+}
+
+
 
 /**
  * An adapter between CoveyTownController's event interface (CoveyTownListener)

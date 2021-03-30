@@ -4,6 +4,7 @@ import io from 'socket.io';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import {
+  emptyRoomHandler,
   playerUpdateHandler,
   townCreateHandler, townDeleteHandler,
   townJoinHandler,
@@ -147,6 +148,28 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         userId: req.params.userId,
         userPassword: req.body.userPassword,
         playerId: req.body.playerId,
+      });
+      res.status(StatusCodes.OK)
+        .json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({
+          message: 'Internal server error, please see log in server for more details',
+        });
+    }
+  });
+
+  /**
+   * Destroy all session in a room
+   */
+  app.patch('/towns/destroyAllSessions/:townID', BodyParser.json(), async (req, res) => {
+    try {
+      const result = await emptyRoomHandler({
+        coveyTownID: req.params.townId,
+        coveyTownPassword: req.body.townPassword,
+        userId: req.body.userId,
+        userPassword: req.body.userPassword,
       });
       res.status(StatusCodes.OK)
         .json(result);
