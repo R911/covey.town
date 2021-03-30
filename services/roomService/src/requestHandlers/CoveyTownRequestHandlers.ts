@@ -91,6 +91,14 @@ export interface PlayerUpdateRequest {
   isAdmin?: boolean;
 }
 
+export interface BanPlayerRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+  playerId: string;
+}
+
 /**
  * Envelope that wraps any response from the server
  */
@@ -188,6 +196,16 @@ export async function playerUpdateHandler(requestData: PlayerUpdateRequest): Pro
     isOK: success,
     response: {},
     message: !success ? 'Invalid password or update values specified. Please double check your user update password.' : undefined,
+  };
+}
+
+export async function banPlayerHandler(requestData:BanPlayerRequest) : Promise<ResponseEnvelope<Record<string, null>>> {
+  const townStore = CoveyTownsStore.getInstance();
+  const success = townStore.banPlayer(requestData.coveyTownID, requestData.coveyTownPassword, requestData.userId, requestData.userPassword, requestData.playerId); 
+  return {
+    isOK: success,
+    response: {},
+    message: !success ? 'Invalid password or player values specified. Please double check your user password.' : undefined,
   };
 }
 

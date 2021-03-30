@@ -136,6 +136,29 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
     }
   });
 
+  /**
+   * Ban a player
+   */
+  app.patch('/player/ban/:userId', BodyParser.json(), async (req, res) => {
+    try {
+      const result = await playerUpdateHandler({
+        coveyTownID: req.body.townID,
+        coveyTownPassword: req.body.townPassword,
+        userId: req.params.userId,
+        userPassword: req.body.userPassword,
+        playerId: req.body.playerId,
+      });
+      res.status(StatusCodes.OK)
+        .json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({
+          message: 'Internal server error, please see log in server for more details',
+        });
+    }
+  });
+
   const socketServer = new io.Server(http, { cors: { origin: '*' } });
   socketServer.on('connection', townSubscriptionHandler);
   return socketServer;

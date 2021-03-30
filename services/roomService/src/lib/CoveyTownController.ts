@@ -164,4 +164,8 @@ export default class CoveyTownController {
   getPlayer(userId: string): Player| undefined {
     return this.players.find(p => p.id === userId);
   }
+
+  getSessionByPlayerId(playerId: string): PlayerSession | undefined {
+    return this._sessions.find((p) => p.player.id === playerId);
+  }
 }
