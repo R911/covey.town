@@ -76,6 +76,31 @@ export interface TownUpdateRequest {
   isPubliclyListed?: boolean;
 }
 
+export interface PlayerUpdateRequest {
+  userId: string,
+  userPassword: string,
+  playerId: string,
+  videoAccess: boolean,
+  audioAccess: boolean,
+  chatAccess: boolean,
+  isAdmin: boolean,
+}
+
+export interface BanPlayerRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+  playerId: string;
+}
+
+export interface EmptyRoomRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+}
+
 /**
  * Envelope that wraps any response from the server
  */
@@ -139,6 +164,21 @@ export default class TownsServiceClient {
 
   async joinTown(requestData: TownJoinRequest): Promise<TownJoinResponse> {
     const responseWrapper = await this._axios.post('/sessions', requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async modifyPlayer(requestData: PlayerUpdateRequest): Promise<void> {
+    const responseWrapper = await this._axios.patch<ResponseEnvelope<void>>(`/player/${requestData.userId}`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async banPlayer(requestData: BanPlayerRequest): Promise<void> {
+    const responseWrapper = await this._axios.patch<ResponseEnvelope<void>>(`/player/ban/${requestData.userId}`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async emptyRoom(requestData: EmptyRoomRequest): Promise<void> {
+    const responseWrapper = await this._axios.patch<ResponseEnvelope<void>>(`/towns/destroyAllSessions/${requestData.coveyTownID}`, requestData);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
