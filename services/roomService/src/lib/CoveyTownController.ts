@@ -53,6 +53,8 @@ export default class CoveyTownController {
   /** The list of players currently in the town * */
   private _players: Player[] = [];
 
+  private _bannedPlayers: Player[] = [];
+
   /** The list of valid sessions for this town * */
   private _sessions: PlayerSession[] = [];
 
@@ -86,7 +88,12 @@ export default class CoveyTownController {
    *
    * @param newPlayer The new player to add to the town
    */
-  async addPlayer(newPlayer: Player): Promise<PlayerSession> {
+  async addPlayer(newPlayer: Player): Promise<PlayerSession | undefined> {
+
+    if (this._bannedPlayers.find(p => p.id === newPlayer.id)){
+      return undefined;
+    }
+
     const theSession = new PlayerSession(newPlayer);
 
     this._sessions.push(theSession);
@@ -168,4 +175,8 @@ export default class CoveyTownController {
   getSessionByPlayerId(playerId: string): PlayerSession | undefined {
     return this._sessions.find((p) => p.player.id === playerId);
   }
+
+  banPlayer(player: Player): void{
+    this._bannedPlayers.push(player);
+  } 
 }

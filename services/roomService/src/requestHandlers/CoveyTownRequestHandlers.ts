@@ -135,6 +135,12 @@ export async function townJoinHandler(requestData: TownJoinRequest): Promise<Res
   }
   const newPlayer = new Player(requestData.userName);
   const newSession = await coveyTownController.addPlayer(newPlayer);
+  if (newSession === undefined){
+    return {
+      isOK: false,
+      message: 'Error: Player Banned from town',
+    };
+  }
   assert(newSession.videoToken);
   return {
     isOK: true,
