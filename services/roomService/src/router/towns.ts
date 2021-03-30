@@ -11,6 +11,7 @@ import {
   townListHandler,
   townSubscriptionHandler,
   townUpdateHandler,
+  banPlayerHandler,
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';
 
@@ -142,7 +143,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.patch('/player/ban/:userId', BodyParser.json(), async (req, res) => {
     try {
-      const result = await playerUpdateHandler({
+      const result = await banPlayerHandler({
         coveyTownID: req.body.townID,
         coveyTownPassword: req.body.townPassword,
         userId: req.params.userId,

@@ -1,6 +1,6 @@
 import { customAlphabet, nanoid } from 'nanoid';
 import { listeners } from 'process';
-import { UserLocation, UserPrivileges } from '../CoveyTypes';
+import { UserLocation } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import Player from '../types/Player';
 import PlayerSession from '../types/PlayerSession';
@@ -127,11 +127,6 @@ export default class CoveyTownController {
   updatePlayerLocation(player: Player, location: UserLocation): void {
     player.updateLocation(location);
     this._listeners.forEach((listener) => listener.onPlayerMoved(player));
-  }
-
-  updatePlayerPrivileges(player: Player, privileges: UserPrivileges): void {
-    player.updatePrivilages(privileges);
-    this._listeners.forEach((listener) => listener.onPlayerPrivilegeUpdate(player));
   }
 
   /**

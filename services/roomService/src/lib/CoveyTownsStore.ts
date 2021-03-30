@@ -1,5 +1,5 @@
 import CoveyTownController from './CoveyTownController';
-import { CoveyTownList, UserPrivileges } from '../CoveyTypes';
+import { CoveyTownList } from '../CoveyTypes';
 
 function passwordMatches(provided: string, expected: string): boolean {
   if (provided === expected) {

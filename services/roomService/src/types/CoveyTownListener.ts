@@ -16,8 +16,6 @@ export default interface CoveyTownListener {
    */
   onPlayerMoved(movedPlayer: Player): void;
 
-  onPlayerPrivilegeUpdate(updatedPlayer: Player): void;
-
   /**
    * Called when a player disconnects from the town
    * @param removedPlayer the player that disconnected
