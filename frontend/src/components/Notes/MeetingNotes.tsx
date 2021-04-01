@@ -63,7 +63,7 @@ export default function MeetingNotes(): JSX.Element {
               console.log(message.body);
             });
           }
-          newMeetingChannel.on('noteAdded', handleNoteAdded);
+          newMeetingChannel.on('messageAdded', handleNoteAdded);
         };
     
         const setDefaultChannel = async (client: ChatClient) => {
