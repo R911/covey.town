@@ -1,5 +1,6 @@
 import CoveyTownController from './CoveyTownController';
 import { CoveyTownList } from '../CoveyTypes';
+import Player from '../types/Player';
 
 function passwordMatches(provided: string, expected: string): boolean {
   if (provided === expected) {
@@ -68,6 +69,14 @@ export default class CoveyTownsStore {
       return true;
     }
     return false;
+  }
+
+  getParticipants(coveyTownID:string): Player[]{
+    const existingTown = this.getControllerForTown(coveyTownID);
+    if (existingTown){
+      return existingTown.players;
+    }
+    throw Error('Invalid townID provided, no such town exists');
   }
 
 }

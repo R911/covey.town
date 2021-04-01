@@ -43,7 +43,7 @@ export interface TownParticipantsRequest {
 
 export interface TownParticipantsResponse {
   /** List of players currently in this town * */
-  currentPlayers: ServerPlayer[];
+  participants: ServerPlayer[];
 }
 
 /**
@@ -156,7 +156,7 @@ export default class TownsServiceClient {
   }
 
   async getParticipants(requestData: TownParticipantsRequest): Promise<TownParticipantsResponse> {
-    const responseWrapper = await this._axios.post('/sessions', requestData);
+    const responseWrapper = await this._axios.get(`/towns/participants/${requestData.coveyTownID}`);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 

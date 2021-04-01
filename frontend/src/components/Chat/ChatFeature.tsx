@@ -55,8 +55,8 @@ export default function ChatFeature(): JSX.Element {
 
     apiClient.getParticipants({coveyTownID: currentCoveyTownID})
       .then((players) => {
-        setParticipants(players.currentPlayers.sort().map(player => player._userName))
-        console.log(`Participants: ${participants}`)
+        setParticipants(players.participants.sort().map(player => player._userName))
+        console.log(players)
         // setParticipants(players.currentPlayers) 
       })
   }, [setParticipants, apiClient]);
