@@ -41,6 +41,16 @@ export interface TownJoinResponse {
   isPubliclyListed: boolean;
 }
 
+export interface TownParticipantsRequest {
+  /** ID of the town to get participants for  * */
+  coveyTownID: string;
+}
+
+export interface TownParticipantsResponse {
+  /** List of players currently in this town * */
+  currentPlayers: Player[];
+}
+
 /**
  * Payload sent by client to create a Town in Covey.Town
  */
