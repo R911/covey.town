@@ -34,11 +34,9 @@ import { ServerPlayer } from '../../classes/Player';
 export default function ChatFeature(): JSX.Element {
   const { apiClient } = useCoveyAppState();
   const [typedMessage, setTypedMessage] = useState<string>('');
-  // const [sentMessages, setChatMessages] = useState<Message>();
   const [messages, setMessages] = useState<TwilioMessage[]>([]);
   const [participants, setParticipants] = useState<string[]>();
   const [participantToSendTo, setParticipantToSendTo] = useState<string>();
-  // const [participants, setParticipants] = useState<ServerPlayer[]>();
   const [chatClient, setChatClient] = useState<ChatClient>();
   const [channel, setChannel] = useState<Channel>();
 
@@ -53,11 +51,11 @@ export default function ChatFeature(): JSX.Element {
     console.log(currentCoveyTownID);
     assert(currentCoveyTownID);
 
+
     apiClient.getParticipants({coveyTownID: currentCoveyTownID})
       .then((players) => {
+        console.log(`players: ${players.currentPlayers}`)
         setParticipants(players.currentPlayers.sort().map(player => player._userName))
-        console.log(`Participants: ${participants}`)
-        // setParticipants(players.currentPlayers) 
       })
   }, [setParticipants, apiClient]);
   useEffect(() => {
