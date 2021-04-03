@@ -31,14 +31,14 @@ export default function MeetingNotes(): JSX.Element {
     const [typedNote, setTypedNote] = useState<string>('');
     // const [meetingNotes, setMeetingNotes] = useState<string>('');
     const [meetingNotes, setMeetingNotes] = useState<TwilioMessage[]>([]);
-
     const [chatClient, setChatClient] = useState<ChatClient>();
     const [channel, setChannel] = useState<Channel>();
+    const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
+    const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
 
     function sendNote(noteToSend: string) {
-        // setMeetingNotes(` ${meetingNotes} ${noteToSend} `)
         setTypedNote('')
-        channel?.sendMessage(noteToSend);
+        channel?.sendMessage(`${playerUserName}: ${ noteToSend}`);
     }
 
     useEffect(() => {
@@ -102,7 +102,9 @@ export default function MeetingNotes(): JSX.Element {
                 <Heading p="4" as="h2" size="lg">Meeting Notes</Heading>
 
                 <Box borderWidth="1px" borderRadius="lg">
-                    { meetingNotes?.map(note => (<Text key={nanoid()} fontSize='sm'> {note.body} </Text>)) }
+                    { meetingNotes?.map(note => (
+                        <Text key={nanoid()} fontSize='sm'> { note.body } </Text>
+                    ))}
                 </Box>
 
                 <Box borderWidth="1px" borderRadius="lg">
@@ -113,6 +115,7 @@ export default function MeetingNotes(): JSX.Element {
                         />
                         <Button data-testid='sendMessageButton' 
                                 colorScheme="teal"
+                                disabled={!userMeetingPrivilege}
                                 onClick={() => sendNote(typedNote)}> Add to Notes </Button>
                     </Flex>
                 </Box>
