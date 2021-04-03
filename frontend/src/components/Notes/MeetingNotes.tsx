@@ -68,13 +68,13 @@ export default function MeetingNotes(): JSX.Element {
     
         const setDefaultChannel = async (client: ChatClient) => {
           try {
-            const defaultChannel = await client.getChannelByUniqueName('general');
+            const defaultChannel = await client.getChannelByUniqueName('meeting-notes');
             await joinChannel(defaultChannel);
             await setChannel(defaultChannel);
           } catch (err) {
             const newChannel = await client.createChannel({
-              uniqueName: 'general',
-              friendlyName: 'general',
+              uniqueName: 'meeting-notes',
+              friendlyName: 'meeting-notes',
             });
             setChannel(newChannel);
             assert(newChannel);
