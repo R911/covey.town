@@ -38,8 +38,8 @@ export default class CoveyTownsStore {
       }));
   }
 
-  createTown(friendlyName: string, isPubliclyListed: boolean): CoveyTownController {
-    const newTown = new CoveyTownController(friendlyName, isPubliclyListed);
+  createTown(friendlyName: string, isPubliclyListed: boolean, capacity?: number): CoveyTownController {
+    const newTown = new CoveyTownController(friendlyName, isPubliclyListed, capacity);
     this._towns.push(newTown);
     return newTown;
   }
@@ -77,6 +77,71 @@ export default class CoveyTownsStore {
       return existingTown.players;
     }
     throw Error('Invalid townID provided, no such town exists');
+  }
+  
+  updatePlayer(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string, playerId: string, videoAccess?: boolean, audioAccess?: boolean, chatAccess?: boolean, isAdmin?:boolean): boolean{
+    const existingTown = this.getControllerForTown(coveyTownID); 
+    if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
+      const user = existingTown.getPlayer(userId);
+      if (!user?.privilages.admin){
+        return false;
+      }
+      // if(user.password !== userPassword) return false;
+      const modifiedPlayer = existingTown.getPlayer(playerId);
+      if (modifiedPlayer===undefined){
+        return false;
+      }
+      const userPrivilege = modifiedPlayer.privilages;
+      if (videoAccess !== undefined){
+        userPrivilege.video = videoAccess;
+      }
+      if (audioAccess !== undefined){
+        userPrivilege.audio = audioAccess;
+      }
+      if (chatAccess !== undefined){
+        userPrivilege.chat = chatAccess;
+      }
+      if (isAdmin !== undefined){
+        userPrivilege.admin = isAdmin;
+      }
+      modifiedPlayer.updatePrivilages(userPrivilege);
+      return true;
+    }
+    return false;
+  }
+
+  banPlayer(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string, playerId: string) : boolean {
+    const existingTown = this.getControllerForTown(coveyTownID); 
+    if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
+      const user = existingTown.getPlayer(userId);
+      if (!user?.privilages.admin){
+        return false;
+      }
+      // if(user.password !== userPassword) return false;
+      const modifiedPlayerSession = existingTown.getSessionByPlayerId(playerId);
+      if (modifiedPlayerSession===undefined){
+        return false;
+      }
+      existingTown.banPlayer(modifiedPlayerSession.player);
+      existingTown.destroySession(modifiedPlayerSession);
+
+      return true;
+    }
+    return false;
+  }
+
+  emptyTown(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string): boolean{
+    const existingTown = this.getControllerForTown(coveyTownID); 
+    if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
+      const user = existingTown.getPlayer(userId);
+      if (!user?.privilages.admin){
+        return false;
+      }
+      // if(user.password !== userPassword) return false;
+      existingTown.disconnectAllPlayers();
+      return true;
+    }
+    return false;
   }
 
 }

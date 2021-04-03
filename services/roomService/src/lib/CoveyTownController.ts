@@ -1,4 +1,5 @@
 import { customAlphabet, nanoid } from 'nanoid';
+import { listeners } from 'process';
 import { UserLocation } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import Player from '../types/Player';
@@ -15,7 +16,6 @@ const friendlyNanoID = customAlphabet('1234567890ABCDEF', 8);
  * can occur (e.g. joining a town, moving, leaving a town)
  */
 export default class CoveyTownController {
-
   get capacity(): number {
     return this._capacity;
   }
@@ -55,6 +55,8 @@ export default class CoveyTownController {
   /** The list of players currently in the town * */
   private _players: Player[] = [];
 
+  private _bannedPlayers: Player[] = [];
+
   /** The list of valid sessions for this town * */
   private _sessions: PlayerSession[] = [];
 
@@ -77,9 +79,10 @@ export default class CoveyTownController {
 
   private _capacity: number;
 
-  constructor(friendlyName: string, isPubliclyListed: boolean) {
+  constructor(friendlyName: string, isPubliclyListed: boolean, capacity?: number) {
     this._coveyTownID = (process.env.DEMO_TOWN_ID === friendlyName ? friendlyName : friendlyNanoID());
-    this._capacity = 50;
+    if (capacity === undefined) this._capacity = 50;
+    else this._capacity = capacity;
     this._townUpdatePassword = nanoid(24);
     this._isPubliclyListed = isPubliclyListed;
     this._friendlyName = friendlyName;
@@ -91,7 +94,12 @@ export default class CoveyTownController {
    *
    * @param newPlayer The new player to add to the town
    */
-  async addPlayer(newPlayer: Player): Promise<PlayerSession> {
+  async addPlayer(newPlayer: Player): Promise<PlayerSession | undefined> {
+
+    if (this._bannedPlayers.find(p => p.id === newPlayer.id)){
+      return undefined;
+    }
+
     const theSession = new PlayerSession(newPlayer);
 
     this._sessions.push(theSession);
@@ -163,4 +171,16 @@ export default class CoveyTownController {
   disconnectAllPlayers(): void {
     this._listeners.forEach((listener) => listener.onTownDestroyed());
   }
+
+  getPlayer(userId: string): Player| undefined {
+    return this.players.find(p => p.id === userId);
+  }
+
+  getSessionByPlayerId(playerId: string): PlayerSession | undefined {
+    return this._sessions.find((p) => p.player.id === playerId);
+  }
+
+  banPlayer(player: Player): void{
+    this._bannedPlayers.push(player);
+  } 
 }
