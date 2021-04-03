@@ -9,7 +9,7 @@ import {
   FormLabel,
   Heading,
   Input,
-  Select,
+  // Select,
   Stack,
   Table,
   TableCaption,
@@ -20,7 +20,10 @@ import {
   Thead,
   Tr,
   useToast,
+  createStandaloneToast,
 } from '@chakra-ui/react';
+// npm i --save react-select
+import Select from 'react-select'
 import { nanoid } from 'nanoid';
 import ChatClient from 'twilio-chat';
 import assert from 'assert';
@@ -28,8 +31,7 @@ import { Channel } from 'twilio-chat/lib/channel';
 import { Message as TwilioMessage } from 'twilio/lib/twiml/MessagingResponse';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
-import { ServerPlayer } from '../../classes/Player';
-// import { ServerPlayer, TownParticipantsResponse, } from '../../classes/TownsServiceClient';
+
 
 export default function ChatFeature(): JSX.Element {
   const { apiClient } = useCoveyAppState();
@@ -39,10 +41,11 @@ export default function ChatFeature(): JSX.Element {
   const [participantToSendTo, setParticipantToSendTo] = useState<string>();
   const [chatClient, setChatClient] = useState<ChatClient>();
   const [channel, setChannel] = useState<Channel>();
+  const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
+  const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
 
   // Get participants from backend
   const WholeGroup = 'Everyone';
-  const sampleParticipants = ['Alice', 'Bob', 'Charles', 'Dave'];
 
   const updateParticipantsListing = useCallback(() => {
     // console.log(apiClient);
@@ -54,8 +57,8 @@ export default function ChatFeature(): JSX.Element {
 
     apiClient.getParticipants({coveyTownID: currentCoveyTownID})
       .then((players) => {
-        console.log(`players: ${players.currentPlayers}`)
-        setParticipants(players.currentPlayers.sort().map(player => player._userName))
+        setParticipants(players.participants.sort().map(player => player._userName))
+        console.log(players) 
       })
   }, [setParticipants, apiClient]);
   useEffect(() => {
@@ -73,7 +76,20 @@ export default function ChatFeature(): JSX.Element {
    // const message: Message = new Message(messageToSend, participantToSendTo);
    // setChatMessages(message);
     setTypedMessage('');
-    channel?.sendMessage(messageToSend);
+    // channel?.sendMessage(messageToSend);
+    channel?.sendMessage(`${playerUserName}: ${ messageToSend}`);
+  }
+
+  
+  function newMessageAlert(senderUsername: string) {
+    const toast = createStandaloneToast()
+    
+    toast({
+      title: `New Message From ${ senderUsername }`,
+      position: "bottom-right",
+      duration: 9000,
+      isClosable: true,
+    })
   }
 
   useEffect(() => {
@@ -128,6 +144,15 @@ export default function ChatFeature(): JSX.Element {
     setup();
   }, [chatClient]);
 
+  // Multi-Select Options
+  const options = [
+    {value: '', label: ''}
+  ]
+
+  participants?.forEach(participant => {
+    options.push({value: participant, label: participant})
+  });
+
   return (
     <form>
       <Divider orientation='horizontal' />
@@ -142,23 +167,7 @@ export default function ChatFeature(): JSX.Element {
 
         <Box borderWidth='1px' borderRadius='lg'>
           <Stack>
-            <Select
-              placeholder='Send Message To: '
-              onChange={event => setParticipantToSendTo(event.target.value)}
-              value={participantToSendTo}
-              >
-              <option key='whole' value='Everyone'>
-                {' '}
-                {WholeGroup}{' '}
-              </option>
-
-              {participants?.map(participant => (
-                <option key={nanoid()} value={participant}>
-                  {' '}
-                  {participant}{' '}
-                </option>
-              ))}
-            </Select>
+            <Select isMulti options={options} />
           </Stack>
 
           <Flex p='4'>
@@ -171,9 +180,9 @@ export default function ChatFeature(): JSX.Element {
             <Button
               data-testid='sendMessageButton'
               colorScheme='teal'
+              disabled={!userChatPrivilege}
               onClick={() => sendMessage(typedMessage)}>
-              {' '}
-              Send Message{' '}
+              {' '} Send Message {' '}
             </Button>
           </Flex>
         </Box>

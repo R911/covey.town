@@ -4,7 +4,7 @@ import React, {
 import './App.css';
 import { BrowserRouter } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, Grid, GridItem } from '@chakra-ui/react';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import assert from 'assert';
 import WorldMap from './components/world/WorldMap';
@@ -25,7 +25,6 @@ import { Callback } from './components/VideoCall/VideoFrontend/types';
 import Player, { ServerPlayer, UserLocation } from './classes/Player';
 import TownsServiceClient, { TownJoinResponse } from './classes/TownsServiceClient';
 import Video from './classes/Video/Video';
-
 import ChatFeature from './components/Chat/ChatFeature';
 import MeetingNotes from './components/Notes/MeetingNotes';
 
@@ -227,10 +226,21 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
     }
     return (
       <div>
-        <WorldMap />
-        <ChatFeature />
-        <MeetingNotes />
-        <VideoOverlay preferredMode="fullwidth" />
+        <Grid
+          templateRows="repeat(2, 1fr)"
+          templateColumns="repeat(5,1fr)"
+          gap = {4}
+          >
+          <GridItem rowSpan={2} colSpan={1}> <WorldMap /> </GridItem>
+          <GridItem rowSpan={1} colSpan={4} > <ChatFeature /> </GridItem>
+          <GridItem rowSpan={2} colSpan={4} > <MeetingNotes /> </GridItem>
+        </Grid>
+
+      <Grid >
+        <GridItem> <VideoOverlay preferredMode="fullwidth" /> </GridItem>
+      </Grid>
+        
+
       </div>
     );
   }, [setupGameController, appState.sessionToken, videoInstance]);
