@@ -44,8 +44,6 @@ export default function ChatFeature(): JSX.Element {
   const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
   const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
 
-  // Get participants from backend
-  const WholeGroup = 'Everyone';
 
   const updateParticipantsListing = useCallback(() => {
     // console.log(apiClient);
@@ -53,7 +51,6 @@ export default function ChatFeature(): JSX.Element {
     const currentCoveyTownID = videoInstance?.coveyTownID;
     console.log(currentCoveyTownID);
     assert(currentCoveyTownID);
-
 
     apiClient.getParticipants({coveyTownID: currentCoveyTownID})
       .then((players) => {
@@ -69,21 +66,16 @@ export default function ChatFeature(): JSX.Element {
     };
   }, [updateParticipantsListing]);
 
-  // Send messages to database
-  // Will need to display messages cleaner
+
   // Need to send messages to only the participants checked in the checkbox
   function sendMessage(messageToSend: string) {
-   // const message: Message = new Message(messageToSend, participantToSendTo);
-   // setChatMessages(message);
     setTypedMessage('');
-    // channel?.sendMessage(messageToSend);
     channel?.sendMessage(`${playerUserName}: ${ messageToSend}`);
   }
 
   
   function newMessageAlert(senderUsername: string) {
     const toast = createStandaloneToast()
-    
     toast({
       title: `New Message From ${ senderUsername }`,
       position: "bottom-right",
@@ -148,7 +140,7 @@ export default function ChatFeature(): JSX.Element {
   const options = [
     {value: '', label: ''}
   ]
-
+  
   participants?.forEach(participant => {
     options.push({value: participant, label: participant})
   });
