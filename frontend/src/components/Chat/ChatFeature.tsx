@@ -2,28 +2,15 @@ import React, { Component, useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Button,
-  Checkbox,
-  Divider,
   Flex,
-  FormControl,
-  FormLabel,
   Heading,
   Input,
-  // Select,
   Stack,
-  Table,
-  TableCaption,
-  Tbody,
   Text,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  useToast,
   createStandaloneToast,
 } from '@chakra-ui/react';
 // npm i --save react-select
-import Select from 'react-select'
+import Select from 'react-select';
 import { nanoid } from 'nanoid';
 import ChatClient from 'twilio-chat';
 import assert from 'assert';
@@ -32,9 +19,8 @@ import { Message as TwilioMessage } from 'twilio/lib/twiml/MessagingResponse';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 
-
 export default function ChatFeature(): JSX.Element {
-  const { apiClient } = useCoveyAppState();
+  const { apiClient, chatToken } = useCoveyAppState();
   const [typedMessage, setTypedMessage] = useState<string>('');
   const [messages, setMessages] = useState<TwilioMessage[]>([]);
   const [participants, setParticipants] = useState<string[]>();
@@ -52,17 +38,16 @@ export default function ChatFeature(): JSX.Element {
     console.log(currentCoveyTownID);
     assert(currentCoveyTownID);
 
-    apiClient.getParticipants({coveyTownID: currentCoveyTownID})
-      .then((players) => {
-        setParticipants(players.participants.sort().map(player => player._userName))
-        console.log(players) 
-      })
+    apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
+      setParticipants(players.participants.sort().map(player => player._userName));
+      console.log(players);
+    });
   }, [setParticipants, apiClient]);
   useEffect(() => {
     updateParticipantsListing();
     const timer = setInterval(updateParticipantsListing, 20000);
     return () => {
-      clearInterval(timer)
+      clearInterval(timer);
     };
   }, [updateParticipantsListing]);
 
@@ -73,27 +58,35 @@ export default function ChatFeature(): JSX.Element {
     channel?.sendMessage(`${playerUserName}: ${ messageToSend}`);
   }
 
-  
+  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>){
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+      sendMessage(typedMessage);
+    }
+  }
+
   function newMessageAlert(senderUsername: string) {
-    const toast = createStandaloneToast()
+    const toast = createStandaloneToast();
+
     toast({
-      title: `New Message From ${ senderUsername }`,
-      position: "bottom-right",
+      title: `New Message From ${senderUsername}`,
+      position: 'bottom-right',
       duration: 9000,
       isClosable: true,
-    })
+    });
   }
 
   useEffect(() => {
-    const createChatClient = async (chatToken: string): Promise<ChatClient> => {
-      const client = await ChatClient.create(chatToken);
+    const createChatClient = async (cToken: string): Promise<ChatClient> => {
+      const client = await ChatClient.create(cToken);
       return client;
       await setChatClient(() => client);
     };
 
     const handleMessageAdded = (message: TwilioMessage) => {
-      // handles both the sent and received messages  
-      setMessages(arr => [...arr, message])
+      // handles both the sent and received messages
+      setMessages(arr => [...arr, message]);
     };
 
     const joinChannel = async (newChannel: Channel) => {
@@ -126,46 +119,54 @@ export default function ChatFeature(): JSX.Element {
 
     const setup = async () => {
       const videoInstance = Video.instance();
-      const chatToken = videoInstance?.chatToken;
-      console.log(chatToken);
-      assert(chatToken);
-      const client = await createChatClient(chatToken);
+      const cToken = videoInstance?.chatToken;
+      assert(cToken);
+      const client = await createChatClient(cToken);
       console.log(client);
       await setDefaultChannel(client);
     };
     setup();
-  }, [chatClient]);
+  }, []);
 
   // Multi-Select Options
-  const options = [
-    {value: '', label: ''}
-  ]
-  
+  const options = [{ value: '', label: '' }];
+
   participants?.forEach(participant => {
-    options.push({value: participant, label: participant})
+    options.push({ value: participant, label: participant });
   });
 
   return (
     <form>
-      <Divider orientation='horizontal' />
       <Box borderWidth='1px' borderRadius='lg'>
-        <Heading bg='teal' p='4' as='h2' size='lg'>
+        <Heading p='4' as='h2' size='md'>
           Chat
         </Heading>
 
-        <Box borderWidth='1px' borderRadius='lg' data-scrollbar='true'>
-          {messages?.map(message => (<Text key={nanoid()} fontSize='sm'> {message.body} </Text>))}
+        <Box borderWidth='1px' borderRadius='sm' w="100%" data-scrollbar='true' h={60}
+            overflowY='scroll' overflowX='scroll'>
+          {messages?.map(message => (
+            <Text key={nanoid()} fontSize='sm'>
+              {' '}
+              {message.body}{' '}
+            </Text>
+          ))}
         </Box>
 
         <Box borderWidth='1px' borderRadius='lg'>
           <Stack>
-            <Select isMulti options={options} />
+            <Select 
+              isMulti 
+              variant="unstyled"
+              options={options} 
+            />
           </Stack>
 
-          <Flex p='4'>
+          <Flex p='2'>
             <Input
               name='chatMessage'
+              variant="unstyled"
               placeholder='Type here'
+              onKeyDown={onKeyDown}
               value={typedMessage}
               onChange={event => setTypedMessage(event.target.value)}
             />
@@ -174,13 +175,12 @@ export default function ChatFeature(): JSX.Element {
               colorScheme='teal'
               disabled={!userChatPrivilege}
               onClick={() => sendMessage(typedMessage)}>
-              {' '} Send Message {' '}
+              {' '}
+              Send {' '}
             </Button>
           </Flex>
         </Box>
       </Box>
-
-      <Divider orientation='horizontal' />
     </form>
   );
 }

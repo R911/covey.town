@@ -2,23 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
-    Checkbox,
     Flex,
-    FormControl,
-    FormLabel,
     Heading,
     Input,
-    Select,
-    Stack,
-    Table,
-    TableCaption,
-    Tbody,
-    Td,
-    Text,
-    Th,
-    Thead,
-    Tr,
-    useToast
   } from '@chakra-ui/react'; 
 import { nanoid } from 'nanoid';
 import ChatClient from 'twilio-chat';
@@ -28,8 +14,7 @@ import { Message as TwilioMessage } from 'twilio/lib/twiml/MessagingResponse';
 import Video from '../../classes/Video/Video';
 
 export default function MeetingNotes(): JSX.Element {
-    const [typedNote, setTypedNote] = useState<string>('');
-    // const [meetingNotes, setMeetingNotes] = useState<string>('');
+    const [typedNote, setTypedNote] = useState<string>(''); 
     const [meetingNotes, setMeetingNotes] = useState<TwilioMessage[]>([]);
     const [chatClient, setChatClient] = useState<ChatClient>();
     const [channel, setChannel] = useState<Channel>();
@@ -40,6 +25,14 @@ export default function MeetingNotes(): JSX.Element {
         setTypedNote('')
         channel?.sendMessage(`${playerUserName}: ${ noteToSend}`);
     }
+
+    function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>){
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          event.stopPropagation();
+          sendNote(typedNote);
+        }
+      }
 
     useEffect(() => {
         const createChatClient = async (chatToken: string): Promise<ChatClient> => {
@@ -68,13 +61,13 @@ export default function MeetingNotes(): JSX.Element {
     
         const setDefaultChannel = async (client: ChatClient) => {
           try {
-            const defaultChannel = await client.getChannelByUniqueName('general');
+            const defaultChannel = await client.getChannelByUniqueName('meeting-notes');
             await joinChannel(defaultChannel);
             await setChannel(defaultChannel);
           } catch (err) {
             const newChannel = await client.createChannel({
-              uniqueName: 'general',
-              friendlyName: 'general',
+              uniqueName: 'meeting-notes',
+              friendlyName: 'meeting-notes',
             });
             setChannel(newChannel);
             assert(newChannel);
@@ -96,27 +89,32 @@ export default function MeetingNotes(): JSX.Element {
       }, [chatClient]);
 
 
+
     return (
         <form>
             <Box borderWidth="1px" borderRadius="lg">
-                <Heading p="4" as="h2" size="lg">Meeting Notes</Heading>
+                <Heading p="4" as="h2" size="md">Meeting Notes</Heading>
 
-                <Box borderWidth="1px" borderRadius="lg">
+                <Box borderWidth="1px" borderRadius="sm" w="100%" data-scrollbar='true' h={60}
+                    overflowY='scroll' overflowX='scroll'>
                     { meetingNotes?.map(note => (
                         <Text key={nanoid()} fontSize='sm'> { note.body } </Text>
                     ))}
                 </Box>
 
-                <Box borderWidth="1px" borderRadius="lg">
-                    <Flex p="4">
-                        <Input name="meetingNote" placeholder="Type here"
+                <Box borderWidth="1px" borderRadius="sm">
+                    <Flex p="2">
+                        <Input name="meetingNote" 
+                               variant="unstyled"
+                               placeholder="Type here"
                                value={typedNote}
+                               onKeyDown={onKeyDown}
                                onChange={event => setTypedNote(event.target.value)}
                         />
                         <Button data-testid='sendMessageButton' 
                                 colorScheme="teal"
                                 disabled={!userMeetingPrivilege}
-                                onClick={() => sendNote(typedNote)}> Add to Notes </Button>
+                                onClick={() => sendNote(typedNote)}> Add Note </Button>
                     </Flex>
                 </Box>
             </Box>

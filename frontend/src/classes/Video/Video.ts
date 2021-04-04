@@ -67,7 +67,6 @@ export default class Video {
           userName: this._userName,
         })
           .then((result) => {
-            console.log(result)
             this.sessionToken = result.coveySessionToken;
             this.videoToken = result.providerVideoToken;
             this._chatToken = result.providerChatToken;
