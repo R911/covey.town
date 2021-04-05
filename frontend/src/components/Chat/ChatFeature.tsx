@@ -28,7 +28,7 @@ import { nanoid } from 'nanoid';
 import ChatClient from 'twilio-chat';
 import assert from 'assert';
 import { Channel } from 'twilio-chat/lib/channel';
-import { Message as TwilioMessage } from 'twilio/lib/twiml/MessagingResponse';
+import { Message as TwilioMessage } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 
@@ -50,12 +50,11 @@ export default function ChatFeature(): JSX.Element {
     // console.log(apiClient);
     const videoInstance = Video.instance();
     const currentCoveyTownID = videoInstance?.coveyTownID;
-    console.log(currentCoveyTownID);
     assert(currentCoveyTownID);
 
     apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
       setParticipants(players.participants.sort().map(player => player._userName));
-      console.log(players);
+      // console.log(players);
     });
   }, [setParticipants, apiClient]);
   useEffect(() => {
@@ -104,9 +103,9 @@ export default function ChatFeature(): JSX.Element {
       if (newChannel.status !== 'joined') {
         await newChannel.join();
         const messageList = (await newChannel.getMessages()).items;
-        messageList.forEach(message => {
-          console.log(message.body);
-        });
+        // messageList.forEach(message => {
+        //   console.log(message.body);
+        // });
       }
       newChannel.on('messageAdded', handleMessageAdded);
     };
@@ -133,7 +132,7 @@ export default function ChatFeature(): JSX.Element {
       const cToken = videoInstance?.chatToken;
       assert(cToken);
       const client = await createChatClient(cToken);
-      console.log(client);
+      // console.log(client);
       await setDefaultChannel(client);
     };
     setup();

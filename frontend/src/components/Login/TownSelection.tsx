@@ -73,12 +73,11 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
           return;
         }
         const initData = await Video.setup(userName, coveyRoomID);
-
+        await Chat.setup(initData.coveyUserID, userName, coveyRoomID  , initData.providerChatToken);
         const loggedIn = await doLogin(initData);
         if (loggedIn) {
           assert(initData.providerVideoToken);
           await connect(initData.providerVideoToken);
-          await Chat.setup(initData.coveyUserID, userName, coveyRoomID  , initData.providerChatToken);
         }
       } catch (err) {
         toast({
