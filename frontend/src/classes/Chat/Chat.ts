@@ -64,8 +64,6 @@ export default class Chat {
       const chatClient = await Chat.chat.setup();
       if (!chatClient) {
         Chat.chat = null;
-      } else {
-        Chat.chat.initMeetingNotesChannel();
       }
     } catch (err) {
       Chat.chat = null;
@@ -77,8 +75,9 @@ export default class Chat {
     return Chat.chat;
   }
 
-  private async initMeetingNotesChannel(): Promise<void> {
+  public async joinMeetingNotesChannel(): Promise<Message[]> {
     let meetingNotesChannel;
+    let messageItems = [];
     try {
       meetingNotesChannel = await this._chatClient?.getChannelByUniqueName(
         this._meetingNotesChannelID,
@@ -93,16 +92,20 @@ export default class Chat {
         });
       }
       assert(meetingNotesChannel);
-      this.joinChannel(meetingNotesChannel);
+      const joinedChannel = await this.joinChannel(meetingNotesChannel);
+      const messageHistory = await joinedChannel.getMessages();
+      messageItems = messageHistory.items;
     }
+    return messageItems;
   }
 
-  private async joinChannel(newChannel: Channel) {
+  private async joinChannel(newChannel: Channel): Promise<Channel> {
     if (newChannel.status !== 'joined') {
       await newChannel.join();
     }
     newChannel.on('messageAdded', this._handleMessageAdded);
     this._channelMap.set(newChannel.uniqueName, newChannel);
+    return newChannel;
   }
 
   public sendMeetingNote(message: string): void {
