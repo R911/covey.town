@@ -2,24 +2,11 @@ import React, { Component, useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Button,
-  Checkbox,
-  Divider,
   Flex,
-  FormControl,
-  FormLabel,
   Heading,
   Input,
-  // Select,
   Stack,
-  Table,
-  TableCaption,
-  Tbody,
   Text,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  useToast,
   createStandaloneToast,
 } from '@chakra-ui/react';
 // npm i --save react-select
@@ -43,8 +30,6 @@ export default function ChatFeature(): JSX.Element {
   const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
   const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
 
-  // Get participants from backend
-  const WholeGroup = 'Everyone';
 
   const updateParticipantsListing = useCallback(() => {
     // console.log(apiClient);
@@ -65,15 +50,19 @@ export default function ChatFeature(): JSX.Element {
     };
   }, [updateParticipantsListing]);
 
-  // Send messages to database
-  // Will need to display messages cleaner
+
   // Need to send messages to only the participants checked in the checkbox
   function sendMessage(messageToSend: string) {
-    // const message: Message = new Message(messageToSend, participantToSendTo);
-    // setChatMessages(message);
     setTypedMessage('');
-    // channel?.sendMessage(messageToSend);
-    channel?.sendMessage(`${playerUserName}: ${messageToSend}`);
+    channel?.sendMessage(`${playerUserName}: ${ messageToSend}`);
+  }
+
+  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>){
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+      sendMessage(typedMessage);
+    }
   }
 
   function newMessageAlert(senderUsername: string) {
@@ -147,13 +136,13 @@ export default function ChatFeature(): JSX.Element {
 
   return (
     <form>
-      <Divider orientation='horizontal' />
       <Box borderWidth='1px' borderRadius='lg'>
-        <Heading bg='teal' p='4' as='h2' size='lg'>
+        <Heading p='4' as='h2' size='md'>
           Chat
         </Heading>
 
-        <Box borderWidth='1px' borderRadius='lg' data-scrollbar='true'>
+        <Box borderWidth='1px' borderRadius='sm' w="100%" data-scrollbar='true' h={60}
+            overflowY='scroll' overflowX='scroll'>
           {messages?.map(message => (
             <Text key={nanoid()} fontSize='sm'>
               {' '}
@@ -164,13 +153,19 @@ export default function ChatFeature(): JSX.Element {
 
         <Box borderWidth='1px' borderRadius='lg'>
           <Stack>
-            <Select isMulti options={options} />
+            <Select 
+              isMulti 
+              variant="unstyled"
+              options={options} 
+            />
           </Stack>
 
-          <Flex p='4'>
+          <Flex p='2'>
             <Input
               name='chatMessage'
+              variant="unstyled"
               placeholder='Type here'
+              onKeyDown={onKeyDown}
               value={typedMessage}
               onChange={event => setTypedMessage(event.target.value)}
             />
@@ -180,13 +175,11 @@ export default function ChatFeature(): JSX.Element {
               disabled={!userChatPrivilege}
               onClick={() => sendMessage(typedMessage)}>
               {' '}
-              Send Message{' '}
+              Send {' '}
             </Button>
           </Flex>
         </Box>
       </Box>
-
-      <Divider orientation='horizontal' />
     </form>
   );
 }
