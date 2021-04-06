@@ -27,14 +27,15 @@ export default function MeetingNotes(): JSX.Element {
 
     const onNoteAdded = (message: Message): void => {
       setMeetingNotes(arr => [...arr, message]);
+      // console.log(message.author);
     };
 
     const initMeetingNotesChannel = async () => {
-      const messageHistory = await chat.joinMeetingNotesChannel();
+      const messageHistory = await chat.initChat([], true);
       setMeetingNotes(arr => arr.concat(messageHistory));
     };
 
-    chat.handleMessageAdded = onNoteAdded;
+    chat.handleMeetingNoteAdded = onNoteAdded;
     initMeetingNotesChannel();
   }, [chat]);
 
