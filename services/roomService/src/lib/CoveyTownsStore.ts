@@ -113,9 +113,7 @@ export default class CoveyTownsStore {
       if (modifiedPlayerSession===undefined){
         return false;
       }
-      existingTown.banPlayer(modifiedPlayerSession.player);
-      existingTown.destroySession(modifiedPlayerSession);
-
+      existingTown.banPlayer(modifiedPlayerSession);
       return true;
     }
     return false;

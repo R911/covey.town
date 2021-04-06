@@ -257,6 +257,10 @@ function townSocketAdapter(socket: Socket): CoveyTownListener {
       socket.emit('townClosing');
       socket.disconnect(true);
     },
+    onPlayerRemoved() {
+      socket.emit('playerKicked');
+      socket.disconnect(true);
+    },
   };
 }
 
@@ -284,13 +288,13 @@ export function townSubscriptionHandler(socket: Socket): void {
   // Create an adapter that will translate events from the CoveyTownController into
   // events that the socket protocol knows about
   const listener = townSocketAdapter(socket);
-  townController.addTownListener(listener);
+  townController.addTownListener(listener, s.player.id);
 
   // Register an event listener for the client socket: if the client disconnects,
   // clean up our listener adapter, and then let the CoveyTownController know that the
   // player's session is disconnected
   socket.on('disconnect', () => {
-    townController.removeTownListener(listener);
+    townController.removeTownListener(listener, s.player.id);
     townController.destroySession(s);
   });
 
