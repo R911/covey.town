@@ -18,13 +18,15 @@ import { Channel } from 'twilio-chat/lib/channel';
 import { Message as TwilioMessage } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
+import { ServerPlayer } from '../../classes/Player';
 
 export default function ChatFeature(): JSX.Element {
   const { apiClient, chatToken } = useCoveyAppState();
   const [typedMessage, setTypedMessage] = useState<string>('');
   const [messages, setMessages] = useState<TwilioMessage[]>([]);
-  const [participants, setParticipants] = useState<string[]>();
-  const [participantToSendTo, setParticipantToSendTo] = useState<string>();
+  const [participants, setParticipants] = useState<ServerPlayer[]>();
+  // const [participants, setParticipants] = useState<string[]>();
+  const [participantsToSendTo, setParticipantsToSendTo] = useState<string[]>([]);
   const [chatClient, setChatClient] = useState<ChatClient>();
   const [channel, setChannel] = useState<Channel>();
   const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
@@ -38,7 +40,10 @@ export default function ChatFeature(): JSX.Element {
     assert(currentCoveyTownID);
 
     apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
-      setParticipants(players.participants.sort().map(player => player._userName));
+      setParticipants(players.participants);
+
+    // apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
+      // setParticipants(players.participants.sort().map(player => player._userName));
       // console.log(players);
     });
   }, [setParticipants, apiClient]);
@@ -128,11 +133,16 @@ export default function ChatFeature(): JSX.Element {
   }, []);
 
   // Multi-Select Options
-  const options = [{ value: '', label: '' }];
+  const options = [{ value: 'test', label: '' }];
 
   participants?.forEach(participant => {
-    options.push({ value: participant, label: participant });
+    options.push({ value: participant._id, label: participant._userName });
   });
+
+
+  function handleChange(listOfParticipants: any[]) {
+    console.log(listOfParticipants);
+  }
 
   return (
     <form>
@@ -156,7 +166,8 @@ export default function ChatFeature(): JSX.Element {
             <Select 
               isMulti 
               variant="unstyled"
-              options={options} 
+              options={options}
+              onChange={e => handleChange(Array.isArray(e) ? e.map(x => x.value) : [])}
             />
           </Stack>
 
