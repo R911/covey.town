@@ -70,7 +70,6 @@ export default class Chat {
     if (!Chat.chat) {
       Chat.chat = new Chat(userID, userName, roomID, chatToken);
       assert(Chat.chat);
-      console.log('Chat instance created');
     }
 
     try {
@@ -139,7 +138,7 @@ export default class Chat {
 
     let chatChannel;
     try {
-      chatChannel = await this._chatClient?.getChannelByUniqueName(this._meetingNotesChannelID);
+      chatChannel = await this._chatClient?.getChannelByUniqueName(chatChannelUniqueName);
     } catch (error) {
       this.logger.error(error);
     } finally {
