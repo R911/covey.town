@@ -43,10 +43,15 @@ export default function ChatFeature(): JSX.Element {
 
     async function newMessageAlert(message: Message) {
       const toast = createStandaloneToast();
-      const listeners = await message.channel.getMembers();
-      const listenerIDs = listeners.map(l => l.identity);
-      listenerIDs.sort();
-      const listenerString = listenerIDs.join(',');
+      let listenerString;
+      if (participantsToSendTo[0] === coveyTownID) {
+        listenerString = 'Everyone';
+      } else {
+        const listeners = await message.channel.getMembers();
+        const listenerIDs = listeners.map(l => l.identity);
+        listenerIDs.sort();
+        listenerString = listenerIDs.join(',');
+      }
 
       toast({
         title: `New Message From ${listenerString}`,
@@ -59,14 +64,14 @@ export default function ChatFeature(): JSX.Element {
       participantIDs.sort();
       const participantString = participantIDs.join('-');
 
-      if (listenerString === participantString) {
+      if (participantsToSendTo[0] === coveyTownID || listenerString === participantString) {
         handleMessageAdded(message);
       }
     }
 
     assert(chat);
     chat.handleChatMessageAdded = newMessageAlert;
-  }, [chat, participantsToSendTo]);
+  }, [chat, coveyTownID, participantsToSendTo]);
 
   const updateParticipantsListing = useCallback(() => {
     // console.log(apiClient);
@@ -117,11 +122,9 @@ export default function ChatFeature(): JSX.Element {
   function handleChange(listOfParticipants: any[]) {
     async function loadChat() {
       setParticipantsToSendTo(() => listOfParticipants);
-      console.log(participantsToSendTo);
       assert(chat);
       const messageHistory = await chat.initChat(listOfParticipants, false);
       setMessages(messageHistory);
-      console.log(messageHistory);
     }
     loadChat();
   }
