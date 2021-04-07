@@ -70,7 +70,7 @@ export default class CoveyTownsStore {
     return false;
   }
 
-  updatePlayer(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string, playerId: string, videoAccess?: boolean, audioAccess?: boolean, chatAccess?: boolean, isAdmin?:boolean): boolean{
+  updatePlayer(coveyTownID: string, coveyTownPassword: string, userId: string, _userPassword: string, playerId: string, videoAccess?: boolean, audioAccess?: boolean, chatAccess?: boolean, isAdmin?:boolean): boolean{
     const existingTown = this.getControllerForTown(coveyTownID); 
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);
@@ -101,7 +101,7 @@ export default class CoveyTownsStore {
     return false;
   }
 
-  banPlayer(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string, playerId: string) : boolean {
+  banPlayer(coveyTownID: string, coveyTownPassword: string, userId: string, _userPassword: string, playerId: string) : boolean {
     const existingTown = this.getControllerForTown(coveyTownID); 
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);
@@ -119,7 +119,7 @@ export default class CoveyTownsStore {
     return false;
   }
 
-  emptyTown(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string): boolean{
+  emptyTown(coveyTownID: string, coveyTownPassword: string, userId: string, _userPassword: string): boolean{
     const existingTown = this.getControllerForTown(coveyTownID); 
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);

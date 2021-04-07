@@ -80,10 +80,10 @@ export interface PlayerUpdateRequest {
   userId: string,
   userPassword: string,
   playerId: string,
-  videoAccess: boolean,
-  audioAccess: boolean,
-  chatAccess: boolean,
-  isAdmin: boolean,
+  videoAccess?: boolean,
+  audioAccess?: boolean,
+  chatAccess?: boolean,
+  isAdmin?: boolean,
 }
 
 export interface BanPlayerRequest {
