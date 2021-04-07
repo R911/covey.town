@@ -95,7 +95,9 @@ export default function ChatFeature(): JSX.Element {
   const options = [{ value: 'test', label: '' }];
 
   participants?.forEach(participant => {
-    options.push({ value: participant._id, label: participant._userName });
+    if (participant._userName !== playerUserName) {
+      options.push({ value: participant._id, label: participant._userName });
+    } 
   });
 
   async function handleChange(listOfParticipants: any[]) {
