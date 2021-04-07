@@ -33,6 +33,7 @@ export default function ChatFeature(): JSX.Element {
   const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
   const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
   const chat = Chat.instance();
+  const [coveyTownID, setCoveyTownID] = useState<string>('');
 
   useEffect(() => {
     const handleMessageAdded = (message: Message) => {
@@ -72,6 +73,7 @@ export default function ChatFeature(): JSX.Element {
     const videoInstance = Video.instance();
     const currentCoveyTownID = videoInstance?.coveyTownID;
     assert(currentCoveyTownID);
+    setCoveyTownID(currentCoveyTownID);
 
     apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
       setParticipants(players.participants);
@@ -104,7 +106,7 @@ export default function ChatFeature(): JSX.Element {
   }
 
   // Multi-Select Options
-  const options = [{ value: 'test', label: '' }];
+  const options = [{ value: `${coveyTownID}`, label: 'Everyone' }];
 
   participants?.forEach(participant => {
     if (participant._userName !== playerUserName) {
