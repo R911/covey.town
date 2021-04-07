@@ -130,6 +130,8 @@ export default class Chat {
       chatChannelUniqueName = this._meetingNotesChannelID;
       chatChannelFriendlyName = 'meeting-notes';
     } else {
+      assert(this._userID);
+      userIDs.push(this._userID);
       userIDs.sort();
       const joinedIDs = userIDs.join('-');
       chatChannelFriendlyName = joinedIDs;

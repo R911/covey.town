@@ -34,26 +34,38 @@ export default function ChatFeature(): JSX.Element {
   const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
   const chat = Chat.instance();
 
-  function newMessageAlert(senderUsername: string) {
-    const toast = createStandaloneToast();
-
-    toast({
-      title: `New Message From ${senderUsername}`,
-      position: 'bottom-right',
-      duration: 9000,
-      isClosable: true,
-    });
-  }
-
-  const handleMessageAdded = (message: Message) => {
-    // handles both the sent and received messages
-    setMessages(arr => [...arr, message]);
-  };
-
   useEffect(() => {
+    const handleMessageAdded = (message: Message) => {
+      // handles both the sent and received messages
+      setMessages(arr => [...arr, message]);
+    };
+
+    async function newMessageAlert(message: Message) {
+      const toast = createStandaloneToast();
+      const listeners = await message.channel.getMembers();
+      const listenerIDs = listeners.map(l => l.identity);
+      listenerIDs.sort();
+      const listenerString = listenerIDs.join(',');
+
+      toast({
+        title: `New Message From ${listenerString}`,
+        position: 'bottom-right',
+        duration: 9000,
+        isClosable: true,
+      });
+
+      const participantIDs = participantsToSendTo;
+      participantIDs.sort();
+      const participantString = participantIDs.join('-');
+
+      if (listenerString === participantString) {
+        handleMessageAdded(message);
+      }
+    }
+
     assert(chat);
-    chat.handleChatMessageAdded = handleMessageAdded;
-  }, [chat]);
+    chat.handleChatMessageAdded = newMessageAlert;
+  }, [chat, participantsToSendTo]);
 
   const updateParticipantsListing = useCallback(() => {
     // console.log(apiClient);
@@ -71,7 +83,7 @@ export default function ChatFeature(): JSX.Element {
   }, [setParticipants, apiClient]);
   useEffect(() => {
     updateParticipantsListing();
-    const timer = setInterval(updateParticipantsListing, 20000);
+    const timer = setInterval(updateParticipantsListing, 5000);
     return () => {
       clearInterval(timer);
     };
@@ -97,14 +109,19 @@ export default function ChatFeature(): JSX.Element {
   participants?.forEach(participant => {
     if (participant._userName !== playerUserName) {
       options.push({ value: participant._id, label: participant._userName });
-    } 
+    }
   });
 
-  async function handleChange(listOfParticipants: any[]) {
-    setParticipantsToSendTo(listOfParticipants);
-    assert(chat);
-    const messageHistory = await chat.initChat(listOfParticipants, false);
-    setMessages(messageHistory);
+  function handleChange(listOfParticipants: any[]) {
+    async function loadChat() {
+      setParticipantsToSendTo(() => listOfParticipants);
+      console.log(participantsToSendTo);
+      assert(chat);
+      const messageHistory = await chat.initChat(listOfParticipants, false);
+      setMessages(messageHistory);
+      console.log(messageHistory);
+    }
+    loadChat();
   }
 
   return (
