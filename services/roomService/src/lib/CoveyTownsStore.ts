@@ -102,12 +102,14 @@ export default class CoveyTownsStore {
   }
 
   banPlayer(coveyTownID: string, coveyTownPassword: string, userId: string, _userPassword: string, playerId: string) : boolean {
-    const existingTown = this.getControllerForTown(coveyTownID); 
+    const existingTown = this.getControllerForTown(coveyTownID);
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);
+      /*
       if (!user?.privilages.admin){
         return false;
       }
+      */
       // if(user.password !== userPassword) return false;
       const modifiedPlayerSession = existingTown.getSessionByPlayerId(playerId);
       if (modifiedPlayerSession===undefined){
@@ -120,12 +122,14 @@ export default class CoveyTownsStore {
   }
 
   emptyTown(coveyTownID: string, coveyTownPassword: string, userId: string, _userPassword: string): boolean{
-    const existingTown = this.getControllerForTown(coveyTownID); 
+    const existingTown = this.getControllerForTown(coveyTownID);
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);
+      /*
       if (!user?.privilages.admin){
         return false;
       }
+      */
       // if(user.password !== userPassword) return false;
       existingTown.disconnectAllPlayers();
       return true;

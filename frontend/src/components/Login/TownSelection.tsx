@@ -126,7 +126,6 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
         isClosable: true,
         duration: null,
       })
-      // apiClient.modifyPlayer({userId:})
       await handleJoin(newTownInfo.coveyTownID);
     } catch (err) {
       toast({

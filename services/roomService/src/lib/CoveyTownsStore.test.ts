@@ -153,10 +153,10 @@ describe('CoveyTownsStore', () => {
     });
     it('Should disconnect all players', async () => {
       const town = createTownForTesting();
-      town.addTownListener(mockCoveyListener());
-      town.addTownListener(mockCoveyListener());
-      town.addTownListener(mockCoveyListener());
-      town.addTownListener(mockCoveyListener());
+      town.addTownListener(mockCoveyListener(), undefined);
+      town.addTownListener(mockCoveyListener(), undefined);
+      town.addTownListener(mockCoveyListener(), undefined);
+      town.addTownListener(mockCoveyListener(), undefined);
       town.disconnectAllPlayers();
 
       expect(mockCoveyListenerOtherFns.mock.calls.length)

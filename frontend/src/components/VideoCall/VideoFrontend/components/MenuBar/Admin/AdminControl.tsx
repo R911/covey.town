@@ -10,7 +10,9 @@ import {
   Th,
   Td,
   Collapse,
-  CheckboxGroup,
+  FormControl,
+  FormLabel,
+  Input,
   Checkbox,
   Box,
   Modal,
@@ -32,7 +34,15 @@ import useMaybeVideo from '../../../../../../hooks/useMaybeVideo';
 const AdminControl: React.FunctionComponent = () => {
   const {isOpen, onOpen, onClose, onToggle} = useDisclosure()
   const video = useMaybeVideo()
-  const {currentTownID, currentTownFriendlyName, currentTownIsPubliclyListed, players} = useCoveyAppState();
+  const {currentTownID, currentTownFriendlyName, myPlayerID, players, apiClient} = useCoveyAppState();
+  const [townPassword, setTownPassword] = useState<string>('');
+  const [userPassword, setUserPassword] = useState<string>('');
+  const [audioPrivilege, setAudioPrivilege] = useState<boolean>(true);
+  const [videoPrivilege, setVideoPrivilege] = useState<boolean>(true);
+  const [chatPrivilege, setChatPrivilege] = useState<boolean>(true);
+  const [isAdmin, setAdmin] = useState<boolean>(false);
+
+  const toast = useToast();
 
   const openSettings = useCallback(()=>{
     onOpen();
@@ -44,7 +54,48 @@ const AdminControl: React.FunctionComponent = () => {
     video?.unPauseGame();
   }, [onClose, video]);
 
+  const handleBan = async (playerId: string) => {
+    try {
+      console.log(townPassword);
+      console.log(userPassword);
+      await apiClient.banPlayer({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID, userPassword:userPassword, playerId});
+    } catch (err) {
+      toast({
+        title: 'Unable to connect to Towns Service',
+        description: err.toString(),
+        status: 'error'
+      })
+    }
+  };
+
+  const handleEmptyTown = async () => {
+    try {
+      await apiClient.emptyTown({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID, userPassword:userPassword});
+    } catch (err) {
+      toast({
+        title: 'Unable to connect to Towns Service',
+        description: err.toString(),
+        status: 'error'
+      })
+    }
+  };
+
+  const handleModifyPlayer = async (playerId: string) => {
+    try {
+      await apiClient.modifyPlayer({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, isAdmin, audioAccess:audioPrivilege, videoAccess:videoPrivilege, chatAccess: chatPrivilege});
+    } catch (err) {
+      toast({
+        title: 'Unable to connect to Towns Service',
+        description: err.toString(),
+        status: 'error'
+      })
+    }
+  };
+
+
+
   return <>
+    <form>
     <MenuItem data-testid='openMenuButton' onClick={openSettings}>
       <Typography variant="body1">Admin Controls</Typography>
     </MenuItem>
@@ -54,6 +105,18 @@ const AdminControl: React.FunctionComponent = () => {
         <ModalHeader>Admin Controls for {currentTownFriendlyName} ({currentTownID})</ModalHeader>
         <ModalCloseButton/>        
           <ModalBody pb={6}>
+          <FormControl>
+              <FormLabel htmlFor="townPassword">Town Password</FormLabel>
+              <Input id="townPassword" autoFocus name="townPassword" placeholder="Town Password"
+                     value={townPassword}
+                     onChange={(event) => setTownPassword(event.target.value) } type="password"
+              />
+              <FormLabel htmlFor="userPassword">Your Password</FormLabel>
+              <Input id="userPassword" autoFocus name="userPassword" placeholder="Your Password"
+                     value={userPassword}
+                     onChange={(event) => setUserPassword(event.target.value) } type="password"
+              />
+            </FormControl>
           <Table>
                 <Thead><Tr><Th>User Name</Th><Th>User ID</Th><Th>Type</Th><Th>Ban/Kick</Th><Th>Modify</Th></Tr></Thead>
                 <Tbody>
@@ -62,31 +125,30 @@ const AdminControl: React.FunctionComponent = () => {
                       role='cell'>{player.id}</Td>
                       <Td role='cell'>{player.privilages?.admin?'Admin': 'Attendee'}</Td>
                       <Td role="cell"> 
-                        <Button colorScheme="red" size="md"> Ban </Button>
+                        <Button colorScheme="red" size="md" onClick={() => handleBan(player.id)}>Ban</Button>
                       </Td>
                         <Td role='cell'>
-                        <Button onClick={onToggle}>Modify Privileges</Button>
-                        <Collapse in={isOpen} animateOpacity>
                           <Box>
                             <HStack>
-                              <Checkbox isChecked={!player.privilages?.video}>Disable Video</Checkbox>
-                              <Checkbox isChecked={!player.privilages?.audio}>Disable Audio</Checkbox>
-                              <Checkbox isChecked={!player.privilages?.chat}>Disable Chat</Checkbox>
-                              <Checkbox isChecked={player.privilages?.admin}>Make Admin</Checkbox>
+                              <Checkbox colorScheme="green" onChange={(e) => {setVideoPrivilege(e.target.checked)}} isChecked={videoPrivilege}>Video</Checkbox>
+                              <Checkbox colorScheme="green" onChange={(e) => {setAudioPrivilege(e.target.checked)}} isChecked={audioPrivilege}>Audio</Checkbox>
+                              <Checkbox colorScheme="green" onChange={(e) => {setChatPrivilege(e.target.checked)}} isChecked={chatPrivilege}>Chat</Checkbox>
+                              <Checkbox colorScheme="green" onChange={(e) => {setAdmin(e.target.checked)}} isChecked={isAdmin}>Make Admin</Checkbox>
+                              <Button onClick={()=>handleModifyPlayer(player.id)}>Modify</Button>
                             </HStack>
                           </Box>
-                        </Collapse>
                         </Td></Tr>
                   ))}
                 </Tbody>
               </Table>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="red" size="md" mr={6}>Empty Town</Button>
+            <Button colorScheme="red" size="md" mr={6} onClick={() => handleEmptyTown()}>Empty Town</Button>
             <Button onClick={closeSettings}>Close</Button>
           </ModalFooter>
       </ModalContent>
     </Modal>
+    </form>
   </>
 }
 

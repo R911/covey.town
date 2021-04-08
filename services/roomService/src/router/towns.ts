@@ -144,9 +144,10 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.patch('/player/ban/:userId', BodyParser.json(), async (req, res) => {
     try {
+      // console.log(req);
       const result = await banPlayerHandler({
-        coveyTownID: req.body.townID,
-        coveyTownPassword: req.body.townPassword,
+        coveyTownID: req.body.coveyTownID,
+        coveyTownPassword: req.body.coveyTownPassword,
         userId: req.params.userId,
         userPassword: req.body.userPassword,
         playerId: req.body.playerId,
@@ -167,9 +168,10 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.patch('/towns/destroyAllSessions/:townID', BodyParser.json(), async (req, res) => {
     try {
+      console.log(req.body);
       const result = await emptyRoomHandler({
-        coveyTownID: req.params.townId,
-        coveyTownPassword: req.body.townPassword,
+        coveyTownID: req.params.townID,
+        coveyTownPassword: req.body.coveyTownPassword,
         userId: req.body.userId,
         userPassword: req.body.userPassword,
       });
