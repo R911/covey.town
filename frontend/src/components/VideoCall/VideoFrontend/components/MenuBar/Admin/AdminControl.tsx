@@ -158,7 +158,7 @@ const AdminControl: React.FunctionComponent = () => {
               />
             </FormControl>
           <Table>
-                <Thead><Tr><Th>User Name</Th><Th>User ID</Th><Th>Type</Th><Th>Ban/Kick</Th><Th>Disable Controls</Th></Tr></Thead>
+                <Thead><Tr><Th>User Name</Th><Th>User ID</Th><Th>Type</Th><Th>Ban/Kick</Th><Th>Disable Controls</Th><Th>Promote</Th></Tr></Thead>
                 <Tbody>
                   {players?.map((player) => (
                     <Tr key={player.id}><Td role='cell'>{player.userName}</Td><Td
@@ -173,10 +173,13 @@ const AdminControl: React.FunctionComponent = () => {
                               <Button colorScheme={videoPrivilege} onClick={()=> handleVideoBan(player.id)} >Video</Button>
                               <Button colorScheme={audioPrivilege} onClick={()=> handleAudioBan(player.id)} >Audio</Button>
                               <Button colorScheme={chatPrivilege} onClick={()=> handleChatBan(player.id)} >Chat</Button>
-                              <Button colorScheme={isAdmin} onClick={()=>promoteToAdmin(player.id)}>Make Admin</Button>
                             </HStack>
                           </Box>
-                        </Td></Tr>
+                        </Td>
+                        <Td role="cell">
+                          <Button colorScheme={isAdmin} onClick={()=>promoteToAdmin(player.id)}>Make Admin</Button>
+                        </Td>
+                        </Tr>
                   ))}
                 </Tbody>
               </Table>
