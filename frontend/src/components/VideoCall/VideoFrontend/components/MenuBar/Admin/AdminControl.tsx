@@ -37,10 +37,10 @@ const AdminControl: React.FunctionComponent = () => {
   const {currentTownID, currentTownFriendlyName, myPlayerID, players, apiClient} = useCoveyAppState();
   const [townPassword, setTownPassword] = useState<string>('');
   const [userPassword, setUserPassword] = useState<string>('');
-  const [audioPrivilege, setAudioPrivilege] = useState<boolean>(true);
-  const [videoPrivilege, setVideoPrivilege] = useState<boolean>(true);
-  const [chatPrivilege, setChatPrivilege] = useState<boolean>(true);
-  const [isAdmin, setAdmin] = useState<boolean>(false);
+  const [audioPrivilege, setAudioPrivilege] = useState<string>('green');
+  const [videoPrivilege, setVideoPrivilege] = useState<string>('green');
+  const [chatPrivilege, setChatPrivilege] = useState<string>('green');
+  const [isAdmin, setAdmin] = useState<string>('gray');
 
   const toast = useToast();
 
@@ -80,9 +80,49 @@ const AdminControl: React.FunctionComponent = () => {
     }
   };
 
-  const handleModifyPlayer = async (playerId: string) => {
+  const handleAudioBan = async (playerId: string) => {
     try {
-      await apiClient.modifyPlayer({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, isAdmin, audioAccess:audioPrivilege, videoAccess:videoPrivilege, chatAccess: chatPrivilege});
+      await apiClient.modifyPlayer({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, audioAccess:false});
+      setAudioPrivilege('red');
+    } catch (err) {
+      toast({
+        title: 'Unable to connect to Towns Service',
+        description: err.toString(),
+        status: 'error'
+      })
+    }
+  };
+
+  const handleVideoBan = async (playerId: string) => {
+    try {
+      await apiClient.modifyPlayer({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, videoAccess:false});
+      setVideoPrivilege('red');
+    } catch (err) {
+      toast({
+        title: 'Unable to connect to Towns Service',
+        description: err.toString(),
+        status: 'error'
+      })
+    }
+  };
+
+  const handleChatBan = async (playerId: string) => {
+    try {
+      await apiClient.modifyPlayer({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, chatAccess:false});
+      setChatPrivilege('red');
+    } catch (err) {
+      toast({
+        title: 'Unable to connect to Towns Service',
+        description: err.toString(),
+        status: 'error'
+      })
+    }
+  };
+
+  const promoteToAdmin = async (playerId: string) => {
+    try {
+      await apiClient.modifyPlayer({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, isAdmin:true});
+      setAdmin('green');
     } catch (err) {
       toast({
         title: 'Unable to connect to Towns Service',
@@ -118,7 +158,7 @@ const AdminControl: React.FunctionComponent = () => {
               />
             </FormControl>
           <Table>
-                <Thead><Tr><Th>User Name</Th><Th>User ID</Th><Th>Type</Th><Th>Ban/Kick</Th><Th>Modify</Th></Tr></Thead>
+                <Thead><Tr><Th>User Name</Th><Th>User ID</Th><Th>Type</Th><Th>Ban/Kick</Th><Th>Disable Controls</Th></Tr></Thead>
                 <Tbody>
                   {players?.map((player) => (
                     <Tr key={player.id}><Td role='cell'>{player.userName}</Td><Td
@@ -130,11 +170,10 @@ const AdminControl: React.FunctionComponent = () => {
                         <Td role='cell'>
                           <Box>
                             <HStack>
-                              <Checkbox colorScheme="green" onChange={(e) => {setVideoPrivilege(e.target.checked)}} isChecked={videoPrivilege}>Video</Checkbox>
-                              <Checkbox colorScheme="green" onChange={(e) => {setAudioPrivilege(e.target.checked)}} isChecked={audioPrivilege}>Audio</Checkbox>
-                              <Checkbox colorScheme="green" onChange={(e) => {setChatPrivilege(e.target.checked)}} isChecked={chatPrivilege}>Chat</Checkbox>
-                              <Checkbox colorScheme="green" onChange={(e) => {setAdmin(e.target.checked)}} isChecked={isAdmin}>Make Admin</Checkbox>
-                              <Button onClick={()=>handleModifyPlayer(player.id)}>Modify</Button>
+                              <Button colorScheme={videoPrivilege} onClick={()=> handleVideoBan(player.id)} >Video</Button>
+                              <Button colorScheme={audioPrivilege} onClick={()=> handleAudioBan(player.id)} >Audio</Button>
+                              <Button colorScheme={chatPrivilege} onClick={()=> handleChatBan(player.id)} >Chat</Button>
+                              <Button colorScheme={isAdmin} onClick={()=>promoteToAdmin(player.id)}>Make Admin</Button>
                             </HStack>
                           </Box>
                         </Td></Tr>
