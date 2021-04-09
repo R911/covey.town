@@ -17,6 +17,7 @@ import './VideoGrid.scss';
 import MediaErrorSnackbar from '../VideoFrontend/components/PreJoinScreens/MediaErrorSnackbar/MediaErrorSnackbar';
 import usePresenting from '../VideoFrontend/components/VideoProvider/usePresenting/usePresenting';
 import useMaybeVideo from '../../../hooks/useMaybeVideo';
+import useCoveyAppState from '../../../hooks/useCoveyAppState';
 
 const Container = styled('div')({
   display: 'grid',
@@ -46,6 +47,7 @@ export default function VideoGrid(props: Props) {
 
   const { stopAudio } = useLocalAudioToggle();
   const { stopVideo } = useLocalVideoToggle();
+  const {myPlayerID, players} = useCoveyAppState();
   const unmountRef = useRef<() => void>();
   const unloadRef = useRef<EventListener>();
   const existingRoomRef = useRef<TwilioRoom | undefined>();
@@ -54,6 +56,33 @@ export default function VideoGrid(props: Props) {
 
   let coveyRoom = coveyController?.coveyTownID;
   if (!coveyRoom) coveyRoom = 'Disconnected';
+
+  useEffect(()=>{
+    console.log(players);
+    console.log(myPlayerID);
+    if(myPlayerID){
+      if(players){
+        const me = players.find((player)=>{myPlayerID===player.id});
+        console.log('me');
+        console.log(me);
+        if(me){
+          if(me.privileges){
+            if(!me.privileges.audio){
+              try {
+                stopAudio();
+              } catch {}
+            }
+            if(!me.privileges.video){
+              try {
+                stopVideo();
+              } catch {}
+            }
+          }
+        }
+      }
+    }
+  },[]);
+
   useEffect(() => {
     function stop() {
       try {
