@@ -17,7 +17,11 @@ import {
   Th,
   Thead,
   Tr,
-  useToast
+  useToast,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
 } from '@chakra-ui/react';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
 import Video from '../../classes/Video/Video';
@@ -34,6 +38,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
   const [currentPublicTowns, setCurrentPublicTowns] = useState<CoveyTownInfo[]>();
+  const [townSize, setTownSize] = useState(50);
   const { connect } = useVideoContext();
   const { apiClient } = useCoveyAppState();
   const toast = useToast();
@@ -109,7 +114,8 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
     try {
       const newTownInfo = await apiClient.createTown({
         friendlyName: newTownName,
-        isPubliclyListed: newTownIsPublic
+        isPubliclyListed: newTownIsPublic,
+        capacity: townSize
       });
       let privateMessage = <></>;
       if (!newTownIsPublic) {
@@ -169,6 +175,17 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
                           onChange={(e) => {
                             setNewTownIsPublic(e.target.checked)
                           }}/>
+              </FormControl>
+            </Box>
+            <Box>
+              <FormControl>
+                <FormLabel htmlFor="roomSize">Room Size</FormLabel>
+                <Slider htmlFor="roomSize" flex="1" min={5} max={150} step={1} focusThumbOnChange={false} value={townSize} onChange={(e)=> setTownSize(e)}>
+                  <SliderTrack>
+                    <SliderFilledTrack />
+                  </SliderTrack>
+                  <SliderThumb fontSize="sm" boxSize="32px" children={townSize} />
+                </Slider>
               </FormControl>
             </Box>
               <Box>

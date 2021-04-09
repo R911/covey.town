@@ -31,6 +31,8 @@ export interface TownJoinResponse {
   friendlyName: string;
   /** Is this a private town? * */
   isPubliclyListed: boolean;
+
+  capacity: number;
 }
 
 /**
@@ -39,6 +41,7 @@ export interface TownJoinResponse {
 export interface TownCreateRequest {
   friendlyName: string;
   isPubliclyListed: boolean;
+  capacity?: number;
 }
 
 /**
@@ -74,6 +77,7 @@ export interface TownUpdateRequest {
   coveyTownPassword: string;
   friendlyName?: string;
   isPubliclyListed?: boolean;
+  capacity?:number;
 }
 
 export interface PlayerUpdateRequest {

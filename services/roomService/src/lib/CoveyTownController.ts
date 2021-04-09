@@ -18,6 +18,10 @@ export default class CoveyTownController {
     return this._capacity;
   }
 
+  set capacity(value: number) {
+    this._capacity = value;
+  }
+
   set isPubliclyListed(value: boolean) {
     this._isPubliclyListed = value;
   }
