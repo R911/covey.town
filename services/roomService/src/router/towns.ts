@@ -118,7 +118,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.patch('/player/:userId', BodyParser.json(), async (req, res) => {
     try {
-      console.log(req.body);
+      // console.log(req.body);
       const result = await playerUpdateHandler({
         coveyTownID: req.body.coveyTownID,
         coveyTownPassword: req.body.coveyTownPassword,

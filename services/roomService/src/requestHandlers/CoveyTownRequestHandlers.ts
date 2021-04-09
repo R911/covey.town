@@ -265,6 +265,9 @@ function townSocketAdapter(socket: Socket): CoveyTownListener {
       socket.emit('playerKicked');
       socket.disconnect(true);
     },
+    onPlayerUpdated(updatedPlayer: Player) {
+      socket.emit('playerUpdated', updatedPlayer);
+    },
   };
 }
 

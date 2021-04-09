@@ -113,6 +113,7 @@ const TownSettings: React.FunctionComponent = () => {
                 <SliderTrack>
                   <SliderFilledTrack />
                 </SliderTrack>
+                {/* eslint-disable-next-line react/no-children-prop */}
                 <SliderThumb fontSize="sm" boxSize="32px" children={townSize} />
               </Slider>
             </FormControl>

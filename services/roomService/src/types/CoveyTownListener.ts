@@ -28,4 +28,6 @@ export default interface CoveyTownListener {
   onTownDestroyed(): void;
 
   onPlayerRemoved(): void;
+
+  onPlayerUpdated(updatedPlayer: Player): void;
 }

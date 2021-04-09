@@ -180,10 +180,11 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
             <Box>
               <FormControl>
                 <FormLabel htmlFor="roomSize">Room Size</FormLabel>
-                <Slider htmlFor="roomSize" flex="1" min={5} max={150} step={1} focusThumbOnChange={false} value={townSize} onChange={(e)=> setTownSize(e)}>
+                <Slider htmlFor="roomSize" flex="1" min={10} max={150} step={1} focusThumbOnChange={false} value={townSize} onChange={(e)=> setTownSize(e)}>
                   <SliderTrack>
                     <SliderFilledTrack />
                   </SliderTrack>
+                  {/* eslint-disable-next-line react/no-children-prop */}
                   <SliderThumb fontSize="sm" boxSize="32px" children={townSize} />
                 </Slider>
               </FormControl>

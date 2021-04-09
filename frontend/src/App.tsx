@@ -33,6 +33,7 @@ type CoveyAppUpdate =
   | { action: 'playerDisconnect'; player: Player }
   | { action: 'weMoved'; location: UserLocation }
   | { action: 'disconnect' }
+  | { action: 'playerUpdated'; player: Player }
   ;
 
 function defaultAppState(): CoveyAppState {
@@ -122,6 +123,14 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
         nextState.nearbyPlayers = state.nearbyPlayers;
       }
       break;
+    case 'playerUpdated':
+      updatePlayer = nextState.players.find((p) => p.id === update.player.id);
+      if (updatePlayer) {
+        updatePlayer.privileges = update.player.privileges;
+      } else {
+        nextState.players = nextState.players.concat([update.player]);
+      }
+      break;
     case 'weMoved':
       nextState.currentLocation = update.location;
       nextState.nearbyPlayers = calculateNearbyPlayers(nextState.players,
@@ -186,6 +195,11 @@ async function GameController(initData: TownJoinResponse,
     socket.emit('playerMovement', location);
     dispatchAppUpdate({ action: 'weMoved', location });
   };
+  socket.on('playerUpdated', (player: ServerPlayer) => {
+    if (player._id !== gamePlayerID) {
+      dispatchAppUpdate({ action: 'playerUpdated', player: Player.fromServerPlayer(player) });
+    }
+  });
 
   dispatchAppUpdate({
     action: 'doConnect',

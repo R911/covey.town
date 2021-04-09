@@ -89,7 +89,7 @@ export default class CoveyTownsStore {
       if (modifiedPlayer===undefined){
         return false;
       }
-      const userPrivilege = modifiedPlayer.privilages;
+      const userPrivilege = modifiedPlayer.privileges;
       if (videoAccess !== undefined){
         userPrivilege.video = videoAccess;
       }
@@ -102,7 +102,7 @@ export default class CoveyTownsStore {
       if (isAdmin !== undefined){
         userPrivilege.admin = isAdmin;
       }
-      modifiedPlayer.updatePrivilages(userPrivilege);
+      existingTown.updatePlayerPrivileges(modifiedPlayer, userPrivilege);
       return true;
     }
     return false;

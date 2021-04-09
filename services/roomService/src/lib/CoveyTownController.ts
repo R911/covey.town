@@ -1,6 +1,7 @@
 import { customAlphabet, nanoid } from 'nanoid';
 import { listeners } from 'process';
-import { UserLocation } from '../CoveyTypes';
+import { assert } from 'console';
+import { UserLocation, UserPrivileges } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import Player from '../types/Player';
 import PlayerSession from '../types/PlayerSession';
@@ -185,5 +186,10 @@ export default class CoveyTownController {
     this._bannedPlayers.push(session.player);
     this.removeTownListener(this._listenerMap.get(session.player.id), session.player.id);
     this.destroySession(session);
-  } 
+  }
+  
+  updatePlayerPrivileges(player:Player, privilege:UserPrivileges): void {
+    player.updatePrivilages(privilege);
+    this._listeners.forEach((listener) => listener.onPlayerUpdated(player));
+  }
 }

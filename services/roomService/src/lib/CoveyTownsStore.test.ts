@@ -23,6 +23,9 @@ function mockCoveyListener(): CoveyTownListener {
     onPlayerRemoved() {
       mockCoveyListenerOtherFns();
     },
+    onPlayerUpdated() {
+      mockCoveyListenerOtherFns();
+    },
   };
 }
 
