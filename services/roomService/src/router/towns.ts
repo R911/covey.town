@@ -1,18 +1,22 @@
-import { Express } from 'express';
 import BodyParser from 'body-parser';
 import Knex from 'knex';
 import crypto from 'crypto';
 import session from 'express-session';
-import io from 'socket.io';
+import dotenv from 'dotenv';
+import { Express } from 'express';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
-import dotenv from 'dotenv';
+import io from 'socket.io';
 import {
+  emptyRoomHandler,
+  playerUpdateHandler,
   townCreateHandler, townDeleteHandler,
   townJoinHandler,
   townListHandler,
+  townPartcipantListHandler,
   townSubscriptionHandler,
   townUpdateHandler,
+  banPlayerHandler,
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';
 
@@ -47,15 +51,15 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
       const result = await townJoinHandler({
         userName: req.body.userName,
         coveyTownID: req.body.coveyTownID,
+        capacity: req.body.capacity,
       });
-      res.status(StatusCodes.OK)
-        .json(result);
+      console.log(result);
+      res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({
-          message: 'Internal server error, please see log in server for more details',
-        });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
     }
   });
 
@@ -68,14 +72,12 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         coveyTownID: req.params.townID,
         coveyTownPassword: req.params.townPassword,
       });
-      res.status(200)
-        .json(result);
+      res.status(200).json(result);
     } catch (err) {
       logError(err);
-      res.status(500)
-        .json({
-          message: 'Internal server error, please see log in server for details',
-        });
+      res.status(500).json({
+        message: 'Internal server error, please see log in server for details',
+      });
     }
   });
 
@@ -85,14 +87,12 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   app.get('/towns', BodyParser.json(), async (_req, res) => {
     try {
       const result = await townListHandler();
-      res.status(StatusCodes.OK)
-        .json(result);
+      res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({
-          message: 'Internal server error, please see log in server for more details',
-        });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
     }
   });
 
@@ -102,14 +102,12 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   app.post('/towns', BodyParser.json(), async (req, res) => {
     try {
       const result = await townCreateHandler(req.body);
-      res.status(StatusCodes.OK)
-        .json(result);
+      res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({
-          message: 'Internal server error, please see log in server for more details',
-        });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
     }
   });
   /**
@@ -122,6 +120,91 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         isPubliclyListed: req.body.isPubliclyListed,
         friendlyName: req.body.friendlyName,
         coveyTownPassword: req.body.coveyTownPassword,
+        capacity: req.body.capacity,
+      });
+      res.status(StatusCodes.OK).json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
+    }
+  });
+
+  app.get('/towns/participants/:townID', BodyParser.json(), async (req, res) => {
+    try {
+      const result = await townPartcipantListHandler(req.params.townID);
+      res.status(StatusCodes.OK).json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
+    }
+  });
+
+  /**
+   * Update a player
+   */
+  app.patch('/player/:userId', BodyParser.json(), async (req, res) => {
+    try {
+      // console.log(req.body);
+      const result = await playerUpdateHandler({
+        coveyTownID: req.body.coveyTownID,
+        coveyTownPassword: req.body.coveyTownPassword,
+        userId: req.params.userId,
+        userPassword: req.body.userPassword,
+        playerId: req.body.playerId,
+        videoAccess: req.body.videoAccess,
+        audioAccess: req.body.audioAccess,
+        chatAccess: req.body.chatAccess,
+        isAdmin: req.body.isAdmin,
+      });
+      res.status(StatusCodes.OK)
+        .json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({
+          message: 'Internal server error, please see log in server for more details',
+        });
+    }
+  });
+
+  /**
+   * Ban a player
+   */
+  app.patch('/player/ban/:userId', BodyParser.json(), async (req, res) => {
+    try {
+      // console.log(req);
+      const result = await banPlayerHandler({
+        coveyTownID: req.body.coveyTownID,
+        coveyTownPassword: req.body.coveyTownPassword,
+        userId: req.params.userId,
+        userPassword: req.body.userPassword,
+        playerId: req.body.playerId,
+      });
+      res.status(StatusCodes.OK)
+        .json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({
+          message: 'Internal server error, please see log in server for more details',
+        });
+    }
+  });
+
+  /**
+   * Destroy all session in a room
+   */
+  app.patch('/towns/destroyAllSessions/:townID', BodyParser.json(), async (req, res) => {
+    try {
+      const result = await emptyRoomHandler({
+        coveyTownID: req.params.townID,
+        coveyTownPassword: req.body.coveyTownPassword,
+        userId: req.body.userId,
+        userPassword: req.body.userPassword,
       });
       res.status(StatusCodes.OK)
         .json(result);

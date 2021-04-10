@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Phaser from 'phaser';
-import Player, { UserLocation } from '../../classes/Player';
+import Player, { UserLocation, UserPrivileges } from '../../classes/Player';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 
@@ -77,16 +77,24 @@ class CoveyGameScene extends Phaser.Scene {
   updatePlayerLocation(player: Player) {
     let myPlayer = this.players.find((p) => p.id === player.id);
     if (!myPlayer) {
-      let { location } = player;
+      let { location, privileges } = player;
       if (!location) {
         location = {
           rotation: 'back',
           moving: false,
           x: 0,
           y: 0,
+        };      
+      }
+      if (!privileges) {
+        privileges = {
+          audio:true,
+          video: true,
+          chat: true,
+          admin: false,
         };
       }
-      myPlayer = new Player(player.id, player.userName, location);
+      myPlayer = new Player(player.id, player.userName, location, privileges);
       this.players.push(myPlayer);
     }
     if (this.id !== myPlayer.id && this.physics && player.location) {

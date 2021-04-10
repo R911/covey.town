@@ -4,10 +4,10 @@ import {Socket as ServerSocket} from 'socket.io';
 
 import {AddressInfo} from 'net';
 import http from 'http';
-import { UserLocation } from '../CoveyTypes';
+import { UserLocation, UserPrivileges } from '../CoveyTypes';
 
 export type RemoteServerPlayer = {
-  location: UserLocation, _userName: string, _id: string
+  location: UserLocation, _userName: string, _id: string, userPrivilege: UserPrivileges
 };
 const createdSocketClients: Socket[] = [];
 

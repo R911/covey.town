@@ -41,6 +41,7 @@ function wrappedTownSettings() {
     currentTownID: '',
     currentTownFriendlyName: '',
     currentTownIsPubliclyListed: false,
+    currentTownCapacity: 50,
     sessionToken: '',
     userName: '',
     socket: null,
@@ -65,13 +66,15 @@ describe('Part 4 - Town Settings', () => {
   let deleteButton: TargetElement;
   let updateButton: TargetElement;
 
-  const openSettingsPane = async (params: { friendlyName: string, isPubliclyListed: boolean, townID: string }) => {
+  const openSettingsPane = async (params: { friendlyName: string, isPubliclyListed: boolean, townID: string, capacity: number }) => {
     // @ts-ignore
     mockUseCoveyAppState.currentTownID = params.townID;
     // @ts-ignore
     mockUseCoveyAppState.currentTownFriendlyName = params.friendlyName;
     // @ts-ignore
     mockUseCoveyAppState.currentTownIsPubliclyListed = params.isPubliclyListed;
+    // @ts-ignore
+    mockUseCoveyAppState.currentTownCapacity = params.capacity;
     renderData = render(wrappedTownSettings());
     // const openMenuButton = renderData.getByTestId('openMenuButton');
     // fireEvent.click(openMenuButton);
@@ -92,6 +95,7 @@ describe('Part 4 - Town Settings', () => {
       friendlyName: nanoid(),
       isPubliclyListed: true,
       townID: nanoid(),
+      capacity:50
     }
     await openSettingsPane(params);
     await waitFor(() => expect(renderData.getByText(`Edit town ${params.friendlyName} (${params.townID})`))
@@ -106,6 +110,7 @@ describe('Part 4 - Town Settings', () => {
       friendlyName: nanoid(),
       isPubliclyListed: false,
       townID: nanoid(),
+      capacity:50,
     }
     await openSettingsPane(params);
     await waitFor(() => expect(renderData.getByText(`Edit town ${params.friendlyName} (${params.townID})`))
@@ -122,6 +127,7 @@ describe('Part 4 - Town Settings', () => {
         friendlyName: nanoid(),
         isPubliclyListed: false,
         townID: nanoid(),
+        capacity:50,
       }
       await openSettingsPane(params);
 
@@ -142,7 +148,8 @@ describe('Part 4 - Town Settings', () => {
           coveyTownID: params.townID,
           coveyTownPassword,
           friendlyName,
-          isPubliclyListed: true
+          isPubliclyListed: true,
+          capacity:50,
         }));
       expect(mockDeleteTown).not.toBeCalled();
 
@@ -152,6 +159,7 @@ describe('Part 4 - Town Settings', () => {
         friendlyName: nanoid(),
         isPubliclyListed: false,
         townID: nanoid(),
+        capacity:50,
       }
 
       mockUpdateTown.mockReturnValue(Promise.resolve());
@@ -183,6 +191,7 @@ describe('Part 4 - Town Settings', () => {
         friendlyName: nanoid(),
         isPubliclyListed: false,
         townID: nanoid(),
+        capacity:50,
       }
 
       const message = `Error${nanoid()}`;
@@ -217,6 +226,7 @@ describe('Part 4 - Town Settings', () => {
         friendlyName: nanoid(),
         isPubliclyListed: true,
         townID: nanoid(),
+        capacity:50,
       }
       await openSettingsPane(params);
 
@@ -245,6 +255,7 @@ describe('Part 4 - Town Settings', () => {
         friendlyName: nanoid(),
         isPubliclyListed: true,
         townID: nanoid(),
+        capacity:50,
       }
       mockDeleteTown.mockReturnValue(Promise.resolve());
 
@@ -275,6 +286,7 @@ describe('Part 4 - Town Settings', () => {
         friendlyName: nanoid(),
         isPubliclyListed: false,
         townID: nanoid(),
+        capacity:50,
       }
 
       const message = `Error${nanoid()}`;

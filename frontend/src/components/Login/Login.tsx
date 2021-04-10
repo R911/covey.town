@@ -76,7 +76,7 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
         setError(response?.error || '');
       } else {
         setLogin({
-          sessionToken: response.sessionToken,
+          authToken: response.sessionToken,
           userName: response.userName,
         })
       }

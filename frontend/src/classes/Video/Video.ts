@@ -14,6 +14,8 @@ export default class Video {
 
   private videoToken: string | null = null;
 
+  private _chatToken: string | null = null;
+
   private _userName: string;
 
   private townsServiceClient: TownsServiceClient = new TownsServiceClient();
@@ -23,6 +25,8 @@ export default class Video {
   private _townFriendlyName: string | undefined;
 
   private _isPubliclyListed: boolean | undefined;
+
+  private _townCapacity: number | undefined;
 
   pauseGame: () => void = ()=>{};
 
@@ -52,6 +56,14 @@ export default class Video {
     return this._coveyTownID;
   }
 
+  get chatToken(): string | null{
+    return this._chatToken;
+  }
+  
+  get townCapacity(): number | undefined {
+    return this._townCapacity;
+  }
+
   private async setup(): Promise<TownJoinResponse> {
     if (!this.initialisePromise) {
       this.initialisePromise = new Promise((resolve, reject) => {
@@ -63,8 +75,10 @@ export default class Video {
           .then((result) => {
             this.sessionToken = result.coveySessionToken;
             this.videoToken = result.providerVideoToken;
+            this._chatToken = result.providerChatToken;
             this._townFriendlyName = result.friendlyName;
             this._isPubliclyListed = result.isPubliclyListed;
+            this._townCapacity = result.capacity;
             resolve(result);
           })
           .catch((err) => {

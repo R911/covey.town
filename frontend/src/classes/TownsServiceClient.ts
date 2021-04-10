@@ -25,12 +25,27 @@ export interface TownJoinResponse {
   /** Secret token that this player should use to authenticate
    * in future requests to the video service * */
   providerVideoToken: string;
+
+  providerChatToken: string;
+  
   /** List of players currently in this town * */
   currentPlayers: ServerPlayer[];
   /** Friendly name of this town * */
   friendlyName: string;
   /** Is this a private town? * */
   isPubliclyListed: boolean;
+
+  capacity: number;
+}
+
+export interface TownParticipantsRequest {
+  /** ID of the town to get participants for  * */
+  coveyTownID: string;
+}
+
+export interface TownParticipantsResponse {
+  /** List of players currently in this town * */
+  participants: ServerPlayer[];
 }
 
 /**
@@ -39,6 +54,7 @@ export interface TownJoinResponse {
 export interface TownCreateRequest {
   friendlyName: string;
   isPubliclyListed: boolean;
+  capacity?: number;
 }
 
 /**
@@ -74,6 +90,34 @@ export interface TownUpdateRequest {
   coveyTownPassword: string;
   friendlyName?: string;
   isPubliclyListed?: boolean;
+  capacity?:number;
+}
+
+export interface PlayerUpdateRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+  playerId: string;
+  videoAccess?: boolean;
+  audioAccess?: boolean;
+  chatAccess?: boolean;
+  isAdmin?: boolean;
+}
+
+export interface BanPlayerRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+  playerId: string;
+}
+
+export interface EmptyTownRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
 }
 
 /**
@@ -167,6 +211,26 @@ export default class TownsServiceClient {
 
   async signUp(requestData: TownAuthorizationRequest): Promise<TownAuthorizationResponse> {
     const responseWrapper = await this._axios.post('/signUp', requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+  
+  async getParticipants(requestData: TownParticipantsRequest): Promise<TownParticipantsResponse> {
+    const responseWrapper = await this._axios.get(`/towns/participants/${requestData.coveyTownID}`);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async modifyPlayer(requestData: PlayerUpdateRequest): Promise<void> {
+    const responseWrapper = await this._axios.patch<ResponseEnvelope<void>>(`/player/${requestData.userId}`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async banPlayer(requestData: BanPlayerRequest): Promise<void> {
+    const responseWrapper = await this._axios.patch<ResponseEnvelope<void>>(`/player/ban/${requestData.userId}`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async emptyTown(requestData: EmptyTownRequest): Promise<void> {
+    const responseWrapper = await this._axios.patch<ResponseEnvelope<void>>(`/towns/destroyAllSessions/${requestData.coveyTownID}`, requestData);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 

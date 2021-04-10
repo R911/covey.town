@@ -14,7 +14,11 @@ import {
   ModalHeader,
   ModalOverlay,
   useDisclosure,
-  useToast
+  useToast,
+  Slider,
+  SliderTrack,
+  SliderThumb,
+  SliderFilledTrack
 } from '@chakra-ui/react';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
@@ -24,10 +28,11 @@ import useMaybeVideo from '../../hooks/useMaybeVideo';
 const TownSettings: React.FunctionComponent = () => {
   const {isOpen, onOpen, onClose} = useDisclosure()
   const video = useMaybeVideo()
-  const {apiClient, currentTownID, currentTownFriendlyName, currentTownIsPubliclyListed} = useCoveyAppState();
+  const {apiClient, currentTownID, currentTownFriendlyName, currentTownIsPubliclyListed, currentTownCapacity} = useCoveyAppState();
   const [friendlyName, setFriendlyName] = useState<string>(currentTownFriendlyName);
   const [isPubliclyListed, setIsPubliclyListed] = useState<boolean>(currentTownIsPubliclyListed);
   const [roomUpdatePassword, setRoomUpdatePassword] = useState<string>('');
+  const [townSize, setTownSize] = useState(currentTownCapacity);
 
   const openSettings = useCallback(()=>{
     onOpen();
@@ -63,7 +68,8 @@ const TownSettings: React.FunctionComponent = () => {
           coveyTownID: currentTownID,
           coveyTownPassword: roomUpdatePassword,
           friendlyName,
-          isPubliclyListed
+          isPubliclyListed,
+          capacity: townSize,
         });
         toast({
           title: 'Town updated',
@@ -100,6 +106,16 @@ const TownSettings: React.FunctionComponent = () => {
             <FormControl mt={4}>
               <FormLabel htmlFor='isPubliclyListed'>Publicly Listed</FormLabel>
               <Checkbox id="isPubliclyListed" name="isPubliclyListed"  isChecked={isPubliclyListed} onChange={(e)=>setIsPubliclyListed(e.target.checked)} />
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="roomSize">Room Size</FormLabel>
+              <Slider htmlFor="roomSize" flex="1" min={5} max={150} step={1} focusThumbOnChange={false} value={townSize} onChange={(e)=> setTownSize(e)}>
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                {/* eslint-disable-next-line react/no-children-prop */}
+                <SliderThumb fontSize="sm" boxSize="32px" children={townSize} />
+              </Slider>
             </FormControl>
             <FormControl isRequired>
               <FormLabel htmlFor="updatePassword">Town Update Password</FormLabel>
