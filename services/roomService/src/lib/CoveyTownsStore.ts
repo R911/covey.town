@@ -1,5 +1,6 @@
 import CoveyTownController from './CoveyTownController';
 import { CoveyTownList } from '../CoveyTypes';
+import Player from '../types/Player';
 
 function passwordMatches(provided: string, expected: string): boolean {
   if (provided === expected) {
@@ -75,7 +76,15 @@ export default class CoveyTownsStore {
     return false;
   }
 
-  updatePlayer(coveyTownID: string, coveyTownPassword: string, userId: string, _userPassword: string, playerId: string, videoAccess?: boolean, audioAccess?: boolean, chatAccess?: boolean, isAdmin?:boolean): boolean{
+  getParticipants(coveyTownID:string): Player[]{
+    const existingTown = this.getControllerForTown(coveyTownID);
+    if (existingTown){
+      return existingTown.players;
+    }
+    throw Error('Invalid townID provided, no such town exists');
+  }
+  
+  updatePlayer(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string, playerId: string, videoAccess?: boolean, audioAccess?: boolean, chatAccess?: boolean, isAdmin?:boolean): boolean{
     const existingTown = this.getControllerForTown(coveyTownID); 
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);
@@ -86,7 +95,7 @@ export default class CoveyTownsStore {
       */
       // if(user.password !== userPassword) return false;
       const modifiedPlayer = existingTown.getPlayer(playerId);
-      if (modifiedPlayer===undefined){
+      if (modifiedPlayer===undefined || userPassword===undefined){
         return false;
       }
       const userPrivilege = modifiedPlayer.privileges;
@@ -119,7 +128,7 @@ export default class CoveyTownsStore {
       */
       // if(user.password !== userPassword) return false;
       const modifiedPlayerSession = existingTown.getSessionByPlayerId(playerId);
-      if (modifiedPlayerSession===undefined){
+      if (modifiedPlayerSession===undefined || _userPassword===undefined){
         return false;
       }
       existingTown.banPlayer(modifiedPlayerSession);
