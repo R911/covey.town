@@ -1,6 +1,5 @@
 import { customAlphabet, nanoid } from 'nanoid';
-import { listeners } from 'process';
-import { UserLocation } from '../CoveyTypes';
+import { UserLocation, UserPrivileges } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import Player from '../types/Player';
 import PlayerSession from '../types/PlayerSession';
@@ -18,6 +17,10 @@ const friendlyNanoID = customAlphabet('1234567890ABCDEF', 8);
 export default class CoveyTownController {
   get capacity(): number {
     return this._capacity;
+  }
+
+  set capacity(value: number) {
+    this._capacity = value;
   }
 
   set isPubliclyListed(value: boolean) {
@@ -68,6 +71,8 @@ export default class CoveyTownController {
 
   /** The list of CoveyTownListeners that are subscribed to events in this town * */
   private _listeners: CoveyTownListener[] = [];
+
+  private _listenerMap: Map<string, CoveyTownListener> = new Map<string, CoveyTownListener>(); 
 
   private readonly _coveyTownID: string;
 
@@ -144,8 +149,9 @@ export default class CoveyTownController {
    *
    * @param listener New listener
    */
-  addTownListener(listener: CoveyTownListener): void {
+  addTownListener(listener: CoveyTownListener, user:string): void {
     this._listeners.push(listener);
+    this._listenerMap.set(user, listener);
   }
 
   /**
@@ -154,8 +160,9 @@ export default class CoveyTownController {
    * @param listener The listener to unsubscribe, must be a listener that was registered
    * with addTownListener, or otherwise will be a no-op
    */
-  removeTownListener(listener: CoveyTownListener): void {
+  removeTownListener(listener: CoveyTownListener|undefined, user:string): void {
     this._listeners = this._listeners.filter((v) => v !== listener);
+    this._listenerMap.delete(user);
   }
 
   /**
@@ -180,7 +187,15 @@ export default class CoveyTownController {
     return this._sessions.find((p) => p.player.id === playerId);
   }
 
-  banPlayer(player: Player): void{
-    this._bannedPlayers.push(player);
-  } 
+  banPlayer(session: PlayerSession): void{
+    this._listenerMap.get(session.player.id)?.onPlayerRemoved();
+    this._bannedPlayers.push(session.player);
+    this.removeTownListener(this._listenerMap.get(session.player.id), session.player.id);
+    this.destroySession(session);
+  }
+  
+  updatePlayerPrivileges(player:Player, privilege:UserPrivileges): void {
+    player.updatePrivilages(privilege);
+    this._listeners.forEach((listener) => listener.onPlayerUpdated(player));
+  }
 }

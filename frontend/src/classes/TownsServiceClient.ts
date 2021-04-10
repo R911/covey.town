@@ -34,6 +34,8 @@ export interface TownJoinResponse {
   friendlyName: string;
   /** Is this a private town? * */
   isPubliclyListed: boolean;
+
+  capacity: number;
 }
 
 export interface TownParticipantsRequest {
@@ -52,6 +54,7 @@ export interface TownParticipantsResponse {
 export interface TownCreateRequest {
   friendlyName: string;
   isPubliclyListed: boolean;
+  capacity?: number;
 }
 
 /**
@@ -87,16 +90,19 @@ export interface TownUpdateRequest {
   coveyTownPassword: string;
   friendlyName?: string;
   isPubliclyListed?: boolean;
+  capacity?:number;
 }
 
 export interface PlayerUpdateRequest {
-  userId: string,
-  userPassword: string,
-  playerId: string,
-  videoAccess: boolean,
-  audioAccess: boolean,
-  chatAccess: boolean,
-  isAdmin: boolean,
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+  playerId: string;
+  videoAccess?: boolean;
+  audioAccess?: boolean;
+  chatAccess?: boolean;
+  isAdmin?: boolean;
 }
 
 export interface BanPlayerRequest {
@@ -107,7 +113,7 @@ export interface BanPlayerRequest {
   playerId: string;
 }
 
-export interface EmptyRoomRequest {
+export interface EmptyTownRequest {
   coveyTownID: string;
   coveyTownPassword: string;
   userId: string;
@@ -195,7 +201,7 @@ export default class TownsServiceClient {
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
-  async emptyRoom(requestData: EmptyRoomRequest): Promise<void> {
+  async emptyTown(requestData: EmptyTownRequest): Promise<void> {
     const responseWrapper = await this._axios.patch<ResponseEnvelope<void>>(`/towns/destroyAllSessions/${requestData.coveyTownID}`, requestData);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }

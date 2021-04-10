@@ -9,13 +9,13 @@ export default class Player {
 
   public label?: Phaser.GameObjects.Text;
 
-  public privilages?: UserPrivileges;
+  public privileges?: UserPrivileges;
 
-  constructor(id: string, userName: string, location: UserLocation, privilages: UserPrivileges) {
+  constructor(id: string, userName: string, location: UserLocation, privileges: UserPrivileges) {
     this._id = id;
     this._userName = userName;
     this.location = location;
-    this.privilages = privilages;
+    this.privileges = privileges;
   }
 
   get userName(): string {

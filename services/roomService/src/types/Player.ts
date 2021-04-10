@@ -14,7 +14,7 @@ export default class Player {
   /** The player's username, which is not guaranteed to be unique within the town * */
   private readonly _userName: string;
 
-  public privilages: UserPrivileges;
+  public privileges: UserPrivileges;
 
   constructor(userName: string) {
     this.location = {
@@ -23,7 +23,7 @@ export default class Player {
       moving: false,
       rotation: 'front',
     };
-    this.privilages = {
+    this.privileges = {
       audio: true,
       video: true,
       chat: true,
@@ -46,7 +46,7 @@ export default class Player {
   }
 
   updatePrivilages(privileges: UserPrivileges): void {
-    this.privilages = privileges;
+    this.privileges = privileges;
   }
   
 }

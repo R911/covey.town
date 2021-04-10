@@ -34,26 +34,14 @@ import ChatFeature from './components/Chat/ChatFeature';
 import MeetingNotes from './components/Notes/MeetingNotes';
 
 type CoveyAppUpdate =
-  | {
-      action: 'doConnect';
-      data: {
-        userName: string;
-        chatToken: string;
-        townFriendlyName: string;
-        townID: string;
-        townIsPubliclyListed: boolean;
-        sessionToken: string;
-        myPlayerID: string;
-        socket: Socket;
-        players: Player[];
-        emitMovement: (location: UserLocation) => void;
-      };
-    }
+  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean,capacity: number ,sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
   | { action: 'addPlayer'; player: Player }
   | { action: 'playerMoved'; player: Player }
   | { action: 'playerDisconnect'; player: Player }
   | { action: 'weMoved'; location: UserLocation }
-  | { action: 'disconnect' };
+  | { action: 'disconnect' }
+  | { action: 'playerUpdated'; player: Player }
+  ;
 
 function defaultAppState(): CoveyAppState {
   return {
@@ -64,6 +52,7 @@ function defaultAppState(): CoveyAppState {
     currentTownFriendlyName: '',
     currentTownID: '',
     currentTownIsPubliclyListed: false,
+    currentTownCapacity: 50,
     sessionToken: '',
     userName: '',
     socket: null,
@@ -84,6 +73,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
     chatToken: state.chatToken,
     currentTownID: state.currentTownID,
     currentTownIsPubliclyListed: state.currentTownIsPubliclyListed,
+    currentTownCapacity: state.currentTownCapacity,
     myPlayerID: state.myPlayerID,
     players: state.players,
     currentLocation: state.currentLocation,
@@ -123,6 +113,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       nextState.currentTownFriendlyName = update.data.townFriendlyName;
       nextState.currentTownID = update.data.townID;
       nextState.currentTownIsPubliclyListed = update.data.townIsPubliclyListed;
+      nextState.currentTownCapacity = update.data.capacity;
       nextState.userName = update.data.userName;
       nextState.emitMovement = update.data.emitMovement;
       nextState.socket = update.data.socket;
@@ -144,6 +135,14 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       );
       if (samePlayers(nextState.nearbyPlayers, state.nearbyPlayers)) {
         nextState.nearbyPlayers = state.nearbyPlayers;
+      }
+      break;
+    case 'playerUpdated':
+      updatePlayer = nextState.players.find((p) => p.id === update.player.id);
+      if (updatePlayer) {
+        updatePlayer.privileges = update.player.privileges;
+      } else {
+        nextState.players = nextState.players.concat([update.player]);
       }
       break;
     case 'weMoved':
@@ -192,6 +191,8 @@ async function GameController(
   assert(video);
   const roomName = video.townFriendlyName;
   assert(roomName);
+  const {townCapacity} = video;
+  assert(townCapacity);
 
   const socket = io(url, { auth: { token: sessionToken, coveyTownID: video.coveyTownID } });
   socket.on('newPlayer', (player: ServerPlayer) => {
@@ -215,6 +216,10 @@ async function GameController(
     socket.emit('playerMovement', location);
     dispatchAppUpdate({ action: 'weMoved', location });
   };
+  socket.on('playerUpdated', (player: ServerPlayer) => {
+    dispatchAppUpdate({ action: 'playerUpdated', player: Player.fromServerPlayer(player) });
+  });
+
   dispatchAppUpdate({
     action: 'doConnect',
     data: {
@@ -225,6 +230,7 @@ async function GameController(
       townID: video.coveyTownID,
       myPlayerID: gamePlayerID,
       townIsPubliclyListed: video.isPubliclyListed,
+      capacity: townCapacity,
       emitMovement,
       socket,
       players: initData.currentPlayers.map(sp => Player.fromServerPlayer(sp)),

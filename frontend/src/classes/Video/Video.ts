@@ -26,6 +26,8 @@ export default class Video {
 
   private _isPubliclyListed: boolean | undefined;
 
+  private _townCapacity: number | undefined;
+
   pauseGame: () => void = ()=>{};
 
   unPauseGame: () => void = ()=>{};
@@ -57,6 +59,10 @@ export default class Video {
   get chatToken(): string | null{
     return this._chatToken;
   }
+  
+  get townCapacity(): number | undefined {
+    return this._townCapacity;
+  }
 
   private async setup(): Promise<TownJoinResponse> {
     if (!this.initialisePromise) {
@@ -72,6 +78,7 @@ export default class Video {
             this._chatToken = result.providerChatToken;
             this._townFriendlyName = result.friendlyName;
             this._isPubliclyListed = result.isPubliclyListed;
+            this._townCapacity = result.capacity;
             resolve(result);
           })
           .catch((err) => {
