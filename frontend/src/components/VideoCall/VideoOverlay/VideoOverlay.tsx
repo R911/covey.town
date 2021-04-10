@@ -45,8 +45,8 @@ export default function VideoGrid(props: Props) {
   const roomState = useRoomState();
   const coveyController = useMaybeVideo();
 
-  const { stopAudio, toggleAudioEnabled } = useLocalAudioToggle();
-  const { stopVideo, toggleVideoEnabled } = useLocalVideoToggle();
+  const { isEnabled:audioEnabled, toggleAudioEnabled, stopAudio } = useLocalAudioToggle();
+  const { isEnabled:videoEnabled, toggleVideoEnabled, stopVideo } = useLocalVideoToggle();
   const {myPlayerID, players} = useCoveyAppState();
   const unmountRef = useRef<() => void>();
   const unloadRef = useRef<EventListener>();
@@ -54,27 +54,27 @@ export default function VideoGrid(props: Props) {
   const [mediaError, setMediaError] = useState<Error>();
   const presenting = usePresenting();
   let disableAudio = false;
-  let disableVideo = true;
+  let disableVideo = false;
 
   let coveyRoom = coveyController?.coveyTownID;
   if (!coveyRoom) coveyRoom = 'Disconnected';
 
   useEffect(()=>{
 
-    async function disableAudioFunc(){
+    async function closeAudio(){
       try {
-        disableAudio = true;
-        await stopAudio();
-        console.log('Audio Disabled');
-      } catch {}
+        await toggleAudioEnabled();
+      } catch (error) {
+        console.log(error);
+      }
     }
 
-    async function disableVideoFunc(){
+    async function closeVideo(){
       try {
-        disableVideo = true;
-        await stopVideo();
-        console.log('Video disabled');
-      } catch {}
+        await toggleVideoEnabled();
+      } catch (error) {
+        console.log(error);
+      }
     }
 
     if(myPlayerID!==undefined){
@@ -83,20 +83,22 @@ export default function VideoGrid(props: Props) {
         if(me){
           if(me.privileges){
             if(!me.privileges.audio){
-              try {
-                disableAudioFunc();
-              } catch {}
+              if(audioEnabled){
+                closeAudio();
+              }
+              disableAudio = true;
             }
             if(!me.privileges.video){
-              try {
-                disableVideoFunc();
-              } catch {}
+              if(videoEnabled){
+                closeVideo();
+              }
+              disableVideo = true;
             }
           }
         }
       }
     }
-  },[toggleVideoEnabled,toggleAudioEnabled]);
+  });
 
   useEffect(() => {
     function stop() {

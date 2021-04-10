@@ -196,9 +196,7 @@ async function GameController(initData: TownJoinResponse,
     dispatchAppUpdate({ action: 'weMoved', location });
   };
   socket.on('playerUpdated', (player: ServerPlayer) => {
-    if (player._id !== gamePlayerID) {
-      dispatchAppUpdate({ action: 'playerUpdated', player: Player.fromServerPlayer(player) });
-    }
+    dispatchAppUpdate({ action: 'playerUpdated', player: Player.fromServerPlayer(player) });
   });
 
   dispatchAppUpdate({

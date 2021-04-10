@@ -122,7 +122,7 @@ const AdminControl: React.FunctionComponent = () => {
   useEffect(() => {
     players?.map((player) => {
       setPrivilegeMap(privilegeMap.set(player.id, player));
-      // console.log(player);
+      console.log(player);
     });
   },[players]);
 
