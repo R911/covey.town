@@ -12,7 +12,7 @@ export default function useLocalAudioToggle() {
     // @ts-ignore
     removeLocalAudioTrack,
   } = useVideoContext();
-  const isEnabled = useIsTrackEnabled(audioTrack);
+  // const isEnabled = useIsTrackEnabled(audioTrack);
   const [isPublishing, setIsPublishing] = useState(false);
 
   const stopAudio = useCallback(() => {
@@ -48,5 +48,5 @@ export default function useLocalAudioToggle() {
     }
   }, [audioTrack, getLocalAudioTrack, isPublishing, localParticipant, stopAudio]);
 
-  return { isEnabled, toggleAudioEnabled, stopAudio } as const;
+  return { isEnabled:!!audioTrack, toggleAudioEnabled, stopAudio } as const;
 }

@@ -24,6 +24,8 @@ export default class Video {
 
   private _isPubliclyListed: boolean | undefined;
 
+  private _townCapacity: number | undefined;
+
   pauseGame: () => void = ()=>{};
 
   unPauseGame: () => void = ()=>{};
@@ -52,6 +54,10 @@ export default class Video {
     return this._coveyTownID;
   }
 
+  get townCapacity(): number | undefined {
+    return this._townCapacity;
+  }
+
   private async setup(): Promise<TownJoinResponse> {
     if (!this.initialisePromise) {
       this.initialisePromise = new Promise((resolve, reject) => {
@@ -65,6 +71,7 @@ export default class Video {
             this.videoToken = result.providerVideoToken;
             this._townFriendlyName = result.friendlyName;
             this._isPubliclyListed = result.isPubliclyListed;
+            this._townCapacity = result.capacity;
             resolve(result);
           })
           .catch((err) => {

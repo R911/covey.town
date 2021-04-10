@@ -1,5 +1,7 @@
 import { customAlphabet, nanoid } from 'nanoid';
-import { UserLocation } from '../CoveyTypes';
+import { listeners } from 'process';
+import { assert } from 'console';
+import { UserLocation, UserPrivileges } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import Player from '../types/Player';
 import PlayerSession from '../types/PlayerSession';
@@ -13,9 +15,12 @@ const friendlyNanoID = customAlphabet('1234567890ABCDEF', 8);
  * can occur (e.g. joining a town, moving, leaving a town)
  */
 export default class CoveyTownController {
-
   get capacity(): number {
     return this._capacity;
+  }
+
+  set capacity(value: number) {
+    this._capacity = value;
   }
 
   set isPubliclyListed(value: boolean) {
@@ -53,6 +58,8 @@ export default class CoveyTownController {
   /** The list of players currently in the town * */
   private _players: Player[] = [];
 
+  private _bannedPlayers: Player[] = [];
+
   /** The list of valid sessions for this town * */
   private _sessions: PlayerSession[] = [];
 
@@ -61,6 +68,8 @@ export default class CoveyTownController {
 
   /** The list of CoveyTownListeners that are subscribed to events in this town * */
   private _listeners: CoveyTownListener[] = [];
+
+  private _listenerMap: Map<string, CoveyTownListener> = new Map<string, CoveyTownListener>(); 
 
   private readonly _coveyTownID: string;
 
@@ -72,9 +81,10 @@ export default class CoveyTownController {
 
   private _capacity: number;
 
-  constructor(friendlyName: string, isPubliclyListed: boolean) {
+  constructor(friendlyName: string, isPubliclyListed: boolean, capacity?: number) {
     this._coveyTownID = (process.env.DEMO_TOWN_ID === friendlyName ? friendlyName : friendlyNanoID());
-    this._capacity = 50;
+    if (capacity === undefined) this._capacity = 50;
+    else this._capacity = capacity;
     this._townUpdatePassword = nanoid(24);
     this._isPubliclyListed = isPubliclyListed;
     this._friendlyName = friendlyName;
@@ -86,7 +96,12 @@ export default class CoveyTownController {
    *
    * @param newPlayer The new player to add to the town
    */
-  async addPlayer(newPlayer: Player): Promise<PlayerSession> {
+  async addPlayer(newPlayer: Player): Promise<PlayerSession | undefined> {
+
+    if (this._bannedPlayers.find(p => p.id === newPlayer.id)){
+      return undefined;
+    }
+
     const theSession = new PlayerSession(newPlayer);
 
     this._sessions.push(theSession);
@@ -128,8 +143,9 @@ export default class CoveyTownController {
    *
    * @param listener New listener
    */
-  addTownListener(listener: CoveyTownListener): void {
+  addTownListener(listener: CoveyTownListener, user:string): void {
     this._listeners.push(listener);
+    this._listenerMap.set(user, listener);
   }
 
   /**
@@ -138,8 +154,9 @@ export default class CoveyTownController {
    * @param listener The listener to unsubscribe, must be a listener that was registered
    * with addTownListener, or otherwise will be a no-op
    */
-  removeTownListener(listener: CoveyTownListener): void {
+  removeTownListener(listener: CoveyTownListener|undefined, user:string): void {
     this._listeners = this._listeners.filter((v) => v !== listener);
+    this._listenerMap.delete(user);
   }
 
   /**
@@ -154,5 +171,25 @@ export default class CoveyTownController {
 
   disconnectAllPlayers(): void {
     this._listeners.forEach((listener) => listener.onTownDestroyed());
+  }
+
+  getPlayer(userId: string): Player| undefined {
+    return this.players.find(p => p.id === userId);
+  }
+
+  getSessionByPlayerId(playerId: string): PlayerSession | undefined {
+    return this._sessions.find((p) => p.player.id === playerId);
+  }
+
+  banPlayer(session: PlayerSession): void{
+    this._listenerMap.get(session.player.id)?.onPlayerRemoved();
+    this._bannedPlayers.push(session.player);
+    this.removeTownListener(this._listenerMap.get(session.player.id), session.player.id);
+    this.destroySession(session);
+  }
+  
+  updatePlayerPrivileges(player:Player, privilege:UserPrivileges): void {
+    player.updatePrivilages(privilege);
+    this._listeners.forEach((listener) => listener.onPlayerUpdated(player));
   }
 }

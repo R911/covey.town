@@ -13,6 +13,7 @@ export interface TownJoinRequest {
   userName: string;
   /** ID of the town that the player would like to join * */
   coveyTownID: string;
+  capacity?: number;
 }
 
 /**
@@ -34,6 +35,8 @@ export interface TownJoinResponse {
   friendlyName: string;
   /** Is this a private town? * */
   isPubliclyListed: boolean;
+
+  capacity: number;
 }
 
 /**
@@ -42,6 +45,7 @@ export interface TownJoinResponse {
 export interface TownCreateRequest {
   friendlyName: string;
   isPubliclyListed: boolean;
+  capacity?: number;
 }
 
 /**
@@ -77,6 +81,34 @@ export interface TownUpdateRequest {
   coveyTownPassword: string;
   friendlyName?: string;
   isPubliclyListed?: boolean;
+  capacity?: number;
+}
+
+export interface PlayerUpdateRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+  playerId: string;
+  videoAccess?: boolean;
+  audioAccess?: boolean;
+  chatAccess?: boolean;
+  isAdmin?: boolean;
+}
+
+export interface BanPlayerRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
+  playerId: string;
+}
+
+export interface EmptyRoomRequest {
+  coveyTownID: string;
+  coveyTownPassword: string;
+  userId: string;
+  userPassword: string;
 }
 
 /**
@@ -108,6 +140,12 @@ export async function townJoinHandler(requestData: TownJoinRequest): Promise<Res
   }
   const newPlayer = new Player(requestData.userName);
   const newSession = await coveyTownController.addPlayer(newPlayer);
+  if (newSession === undefined){
+    return {
+      isOK: false,
+      message: 'Error: Player Banned from town',
+    };
+  }
   assert(newSession.videoToken);
   return {
     isOK: true,
@@ -118,6 +156,7 @@ export async function townJoinHandler(requestData: TownJoinRequest): Promise<Res
       currentPlayers: coveyTownController.players,
       friendlyName: coveyTownController.friendlyName,
       isPubliclyListed: coveyTownController.isPubliclyListed,
+      capacity: coveyTownController.capacity,
     },
   };
 }
@@ -138,7 +177,7 @@ export async function townCreateHandler(requestData: TownCreateRequest): Promise
       message: 'FriendlyName must be specified',
     };
   }
-  const newTown = townsStore.createTown(requestData.friendlyName, requestData.isPubliclyListed);
+  const newTown = townsStore.createTown(requestData.friendlyName, requestData.isPubliclyListed, requestData.capacity);
   return {
     isOK: true,
     response: {
@@ -160,7 +199,7 @@ export async function townDeleteHandler(requestData: TownDeleteRequest): Promise
 
 export async function townUpdateHandler(requestData: TownUpdateRequest): Promise<ResponseEnvelope<Record<string, null>>> {
   const townsStore = CoveyTownsStore.getInstance();
-  const success = townsStore.updateTown(requestData.coveyTownID, requestData.coveyTownPassword, requestData.friendlyName, requestData.isPubliclyListed);
+  const success = townsStore.updateTown(requestData.coveyTownID, requestData.coveyTownPassword, requestData.friendlyName, requestData.isPubliclyListed, requestData.capacity);
   return {
     isOK: success,
     response: {},
@@ -168,6 +207,38 @@ export async function townUpdateHandler(requestData: TownUpdateRequest): Promise
   };
 
 }
+
+export async function playerUpdateHandler(requestData: PlayerUpdateRequest): Promise<ResponseEnvelope<Record<string, null>>> {
+  const townStore = CoveyTownsStore.getInstance();
+  const success = townStore.updatePlayer(requestData.coveyTownID, requestData.coveyTownPassword, requestData.userId, requestData.userPassword, requestData.playerId, requestData.videoAccess, requestData.audioAccess, requestData.chatAccess, requestData.isAdmin); 
+  return {
+    isOK: success,
+    response: {},
+    message: !success ? 'Invalid password or update values specified. Please double check your user update password.' : undefined,
+  };
+}
+
+export async function banPlayerHandler(requestData:BanPlayerRequest) : Promise<ResponseEnvelope<Record<string, null>>> {
+  const townStore = CoveyTownsStore.getInstance();
+  const success = townStore.banPlayer(requestData.coveyTownID, requestData.coveyTownPassword, requestData.userId, requestData.userPassword, requestData.playerId); 
+  return {
+    isOK: success,
+    response: {},
+    message: !success ? 'Invalid password or player values specified. Please double check your user password.' : undefined,
+  };
+}
+
+export async function emptyRoomHandler(requestData:EmptyRoomRequest) : Promise<ResponseEnvelope<Record<string, null>>> {
+  const townStore = CoveyTownsStore.getInstance();
+  const success = townStore.emptyTown(requestData.coveyTownID, requestData.coveyTownPassword, requestData.userId, requestData.userPassword); 
+  return {
+    isOK: success,
+    response: {},
+    message: !success ? 'Invalid password or user values specified. Please double check your user password.' : undefined,
+  };
+}
+
+
 
 /**
  * An adapter between CoveyTownController's event interface (CoveyTownListener)
@@ -189,6 +260,13 @@ function townSocketAdapter(socket: Socket): CoveyTownListener {
     onTownDestroyed() {
       socket.emit('townClosing');
       socket.disconnect(true);
+    },
+    onPlayerRemoved() {
+      socket.emit('playerKicked');
+      socket.disconnect(true);
+    },
+    onPlayerUpdated(updatedPlayer: Player) {
+      socket.emit('playerUpdated', updatedPlayer);
     },
   };
 }
@@ -217,13 +295,13 @@ export function townSubscriptionHandler(socket: Socket): void {
   // Create an adapter that will translate events from the CoveyTownController into
   // events that the socket protocol knows about
   const listener = townSocketAdapter(socket);
-  townController.addTownListener(listener);
+  townController.addTownListener(listener, s.player.id);
 
   // Register an event listener for the client socket: if the client disconnects,
   // clean up our listener adapter, and then let the CoveyTownController know that the
   // player's session is disconnected
   socket.on('disconnect', () => {
-    townController.removeTownListener(listener);
+    townController.removeTownListener(listener, s.player.id);
     townController.destroySession(s);
   });
 

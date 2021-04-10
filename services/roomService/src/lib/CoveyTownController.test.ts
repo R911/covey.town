@@ -63,7 +63,7 @@ describe('CoveyTownController', () => {
       const player = new Player('test player');
       await testingTown.addPlayer(player);
       const newLocation = generateTestLocation();
-      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      mockListeners.forEach(listener => testingTown.addTownListener(listener, player.id));
       testingTown.updatePlayerLocation(player, newLocation);
       mockListeners.forEach(listener => expect(listener.onPlayerMoved).toBeCalledWith(player));
     });
@@ -71,12 +71,12 @@ describe('CoveyTownController', () => {
       const player = new Player('test player');
       const session = await testingTown.addPlayer(player);
 
-      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      mockListeners.forEach(listener => testingTown.addTownListener(listener, player.id));
       testingTown.destroySession(session);
       mockListeners.forEach(listener => expect(listener.onPlayerDisconnected).toBeCalledWith(player));
     });
     it('should notify added listeners of new players when addPlayer is called', async () => {
-      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      mockListeners.forEach(listener => testingTown.addTownListener(listener, '1234'));
 
       const player = new Player('test player');
       await testingTown.addPlayer(player);
@@ -87,7 +87,7 @@ describe('CoveyTownController', () => {
       const player = new Player('test player');
       await testingTown.addPlayer(player);
 
-      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      mockListeners.forEach(listener => testingTown.addTownListener(listener, player.id));
       testingTown.disconnectAllPlayers();
       mockListeners.forEach(listener => expect(listener.onTownDestroyed).toBeCalled());
 
@@ -96,10 +96,10 @@ describe('CoveyTownController', () => {
       const player = new Player('test player');
       await testingTown.addPlayer(player);
 
-      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      mockListeners.forEach(listener => testingTown.addTownListener(listener, player.id));
       const newLocation = generateTestLocation();
       const listenerRemoved = mockListeners[1];
-      testingTown.removeTownListener(listenerRemoved);
+      testingTown.removeTownListener(listenerRemoved, player.id);
       testingTown.updatePlayerLocation(player, newLocation);
       expect(listenerRemoved.onPlayerMoved).not.toBeCalled();
     });
@@ -107,9 +107,9 @@ describe('CoveyTownController', () => {
       const player = new Player('test player');
       const session = await testingTown.addPlayer(player);
 
-      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      mockListeners.forEach(listener => testingTown.addTownListener(listener, player.id));
       const listenerRemoved = mockListeners[1];
-      testingTown.removeTownListener(listenerRemoved);
+      testingTown.removeTownListener(listenerRemoved, player.id);
       testingTown.destroySession(session);
       expect(listenerRemoved.onPlayerDisconnected).not.toBeCalled();
 
@@ -117,9 +117,9 @@ describe('CoveyTownController', () => {
     it('should not notify removed listeners of new players when addPlayer is called', async () => {
       const player = new Player('test player');
 
-      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      mockListeners.forEach(listener => testingTown.addTownListener(listener, player.id));
       const listenerRemoved = mockListeners[1];
-      testingTown.removeTownListener(listenerRemoved);
+      testingTown.removeTownListener(listenerRemoved, player.id);
       const session = await testingTown.addPlayer(player);
       testingTown.destroySession(session);
       expect(listenerRemoved.onPlayerJoined).not.toBeCalled();
@@ -129,9 +129,9 @@ describe('CoveyTownController', () => {
       const player = new Player('test player');
       await testingTown.addPlayer(player);
 
-      mockListeners.forEach(listener => testingTown.addTownListener(listener));
+      mockListeners.forEach(listener => testingTown.addTownListener(listener, player.id));
       const listenerRemoved = mockListeners[1];
-      testingTown.removeTownListener(listenerRemoved);
+      testingTown.removeTownListener(listenerRemoved, player.id);
       testingTown.disconnectAllPlayers();
       expect(listenerRemoved.onTownDestroyed).not.toBeCalled();
 
@@ -224,7 +224,7 @@ describe('CoveyTownController', () => {
         TestUtils.setSessionTokenAndTownID(testingTown.coveyTownID, session.sessionToken, mockSocket);
         townSubscriptionHandler(mockSocket);
         const mockListener = mock<CoveyTownListener>();
-        testingTown.addTownListener(mockListener);
+        testingTown.addTownListener(mockListener, session.player.id);
         // find the 'playerMovement' event handler for the socket, which should have been registered after the socket was connected
         const playerMovementHandler = mockSocket.on.mock.calls.find(call => call[0] === 'playerMovement');
         if (playerMovementHandler && playerMovementHandler[1]) {

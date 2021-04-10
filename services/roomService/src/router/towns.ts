@@ -4,11 +4,14 @@ import io from 'socket.io';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import {
+  emptyRoomHandler,
+  playerUpdateHandler,
   townCreateHandler, townDeleteHandler,
   townJoinHandler,
   townListHandler,
   townSubscriptionHandler,
   townUpdateHandler,
+  banPlayerHandler,
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';
 
@@ -21,6 +24,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
       const result = await townJoinHandler({
         userName: req.body.userName,
         coveyTownID: req.body.coveyTownID,
+        capacity: req.body.capacity,
       });
       res.status(StatusCodes.OK)
         .json(result);
@@ -96,6 +100,81 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         isPubliclyListed: req.body.isPubliclyListed,
         friendlyName: req.body.friendlyName,
         coveyTownPassword: req.body.coveyTownPassword,
+        capacity: req.body.capacity,
+      });
+      res.status(StatusCodes.OK)
+        .json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({
+          message: 'Internal server error, please see log in server for more details',
+        });
+    }
+  });
+
+  /**
+   * Update a player
+   */
+  app.patch('/player/:userId', BodyParser.json(), async (req, res) => {
+    try {
+      // console.log(req.body);
+      const result = await playerUpdateHandler({
+        coveyTownID: req.body.coveyTownID,
+        coveyTownPassword: req.body.coveyTownPassword,
+        userId: req.params.userId,
+        userPassword: req.body.userPassword,
+        playerId: req.body.playerId,
+        videoAccess: req.body.videoAccess,
+        audioAccess: req.body.audioAccess,
+        chatAccess: req.body.chatAccess,
+        isAdmin: req.body.isAdmin,
+      });
+      res.status(StatusCodes.OK)
+        .json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({
+          message: 'Internal server error, please see log in server for more details',
+        });
+    }
+  });
+
+  /**
+   * Ban a player
+   */
+  app.patch('/player/ban/:userId', BodyParser.json(), async (req, res) => {
+    try {
+      // console.log(req);
+      const result = await banPlayerHandler({
+        coveyTownID: req.body.coveyTownID,
+        coveyTownPassword: req.body.coveyTownPassword,
+        userId: req.params.userId,
+        userPassword: req.body.userPassword,
+        playerId: req.body.playerId,
+      });
+      res.status(StatusCodes.OK)
+        .json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({
+          message: 'Internal server error, please see log in server for more details',
+        });
+    }
+  });
+
+  /**
+   * Destroy all session in a room
+   */
+  app.patch('/towns/destroyAllSessions/:townID', BodyParser.json(), async (req, res) => {
+    try {
+      const result = await emptyRoomHandler({
+        coveyTownID: req.params.townID,
+        coveyTownPassword: req.body.coveyTownPassword,
+        userId: req.body.userId,
+        userPassword: req.body.userPassword,
       });
       res.status(StatusCodes.OK)
         .json(result);
