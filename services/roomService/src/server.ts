@@ -6,7 +6,7 @@ import addTownRoutes from './router/towns';
 import CoveyTownsStore from './lib/CoveyTownsStore';
 
 const app = Express();
-app.use(CORS());
+app.use(CORS()); 
 const server = http.createServer(app);
 
 addTownRoutes(server, app);
