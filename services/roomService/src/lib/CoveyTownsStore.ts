@@ -128,7 +128,7 @@ export default class CoveyTownsStore {
       */
       // if(user.password !== userPassword) return false;
       const modifiedPlayerSession = existingTown.getSessionByPlayerId(playerId);
-      if (modifiedPlayerSession===undefined || userPassword===undefined){
+      if (modifiedPlayerSession===undefined || _userPassword===undefined){
         return false;
       }
       existingTown.banPlayer(modifiedPlayerSession);
