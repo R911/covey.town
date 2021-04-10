@@ -41,6 +41,7 @@ function wrappedTownSettings() {
     currentTownID: '',
     currentTownFriendlyName: '',
     currentTownIsPubliclyListed: false,
+    currentTownCapacity: 50,
     sessionToken: '',
     userName: '',
     socket: null,

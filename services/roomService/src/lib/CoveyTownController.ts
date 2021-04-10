@@ -1,6 +1,4 @@
 import { customAlphabet, nanoid } from 'nanoid';
-import { listeners } from 'process';
-import { assert } from 'console';
 import { UserLocation, UserPrivileges } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import Player from '../types/Player';
