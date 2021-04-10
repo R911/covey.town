@@ -13,8 +13,7 @@ import { io, Socket } from 'socket.io-client';
 import { ChakraProvider, Grid, GridItem } from '@chakra-ui/react';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import assert from 'assert';
-import WorldMap from './components/world/WorldMap';
-import VideoOverlay from './components/VideoCall/VideoOverlay/VideoOverlay';
+import HomePage from './components/Login/HomePage';
 import { CoveyAppState, NearbyPlayers } from './CoveyTypes';
 import VideoContext from './contexts/VideoContext';
 import Login from './components/Login/Login';
@@ -32,14 +31,17 @@ import TownsServiceClient, { TownJoinResponse } from './classes/TownsServiceClie
 import Video from './classes/Video/Video';
 import ChatFeature from './components/Chat/ChatFeature';
 import MeetingNotes from './components/Notes/MeetingNotes';
+import WorldMap from './components/world/WorldMap';
+import VideoOverlay from './components/VideoCall/VideoOverlay/VideoOverlay';
 
 type CoveyAppUpdate =
-  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean,capacity: number ,sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
+  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean, chatToken: string, capacity: number ,sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
   | { action: 'addPlayer'; player: Player }
   | { action: 'playerMoved'; player: Player }
   | { action: 'playerDisconnect'; player: Player }
   | { action: 'weMoved'; location: UserLocation }
   | { action: 'disconnect' }
+  | { action: 'doLogin'; data: { userName: string, authToken: string } }
   | { action: 'playerUpdated'; player: Player }
   ;
 
@@ -54,6 +56,7 @@ function defaultAppState(): CoveyAppState {
     currentTownIsPubliclyListed: false,
     currentTownCapacity: 50,
     sessionToken: '',
+    authToken: '',
     userName: '',
     socket: null,
     currentLocation: {
@@ -69,6 +72,7 @@ function defaultAppState(): CoveyAppState {
 function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyAppState {
   const nextState = {
     sessionToken: state.sessionToken,
+    authToken: state.authToken,
     currentTownFriendlyName: state.currentTownFriendlyName,
     chatToken: state.chatToken,
     currentTownID: state.currentTownID,
@@ -170,6 +174,11 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
     case 'disconnect':
       state.socket?.disconnect();
       return defaultAppState();
+      break;
+    case 'doLogin':
+      nextState.authToken = update.data.authToken;
+      nextState.userName = update.data.userName;
+      break;
     default:
       throw new Error('Unexpected state request');
   }
@@ -260,9 +269,13 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
     });
   }, [dispatchAppUpdate, setOnDisconnect]);
 
+
   const page = useMemo(() => {
+    if (!appState.authToken) {
+      return <Login setLogin={(data) => dispatchAppUpdate({ action: 'doLogin', data: { authToken: data.authToken, userName: data.userName } })} />; 
+    }
     if (!appState.sessionToken) {
-      return <Login doLogin={setupGameController} />;
+      return <HomePage doLogin={setupGameController} userName={appState.userName} />
     }
     if (!videoInstance) {
       return <div>Loading...</div>;
@@ -292,7 +305,7 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
         </Grid>
       </div>
     );
-  }, [setupGameController, appState.sessionToken, videoInstance]);
+  }, [setupGameController, appState.authToken, videoInstance, appState.sessionToken, appState.userName]);
   return (
     <CoveyAppContext.Provider value={appState}>
       <VideoContext.Provider value={Video.instance()}>

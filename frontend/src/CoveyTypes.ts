@@ -17,7 +17,9 @@ export type NearbyPlayers = {
 };
 export type CoveyAppState = {
   sessionToken: string,
+  authToken: string,
   userName: string,
+  chatToken: string,
   currentTownFriendlyName: string,
   currentTownID: string,
   currentTownIsPubliclyListed: boolean,
