@@ -7,8 +7,7 @@ import { io, Socket } from 'socket.io-client';
 import { ChakraProvider } from '@chakra-ui/react';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import assert from 'assert';
-import WorldMap from './components/world/WorldMap';
-import VideoOverlay from './components/VideoCall/VideoOverlay/VideoOverlay';
+import HomePage from './components/Login/HomePage';
 import { CoveyAppState, NearbyPlayers } from './CoveyTypes';
 import VideoContext from './contexts/VideoContext';
 import Login from './components/Login/Login';
@@ -33,6 +32,7 @@ type CoveyAppUpdate =
   | { action: 'playerDisconnect'; player: Player }
   | { action: 'weMoved'; location: UserLocation }
   | { action: 'disconnect' }
+  | { action: 'doLogin'; data: { userName: string, sessionToken: string } }
   ;
 
 function defaultAppState(): CoveyAppState {
@@ -140,6 +140,11 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
     case 'disconnect':
       state.socket?.disconnect();
       return defaultAppState();
+      break;
+    case 'doLogin':
+      nextState.sessionToken = update.data.sessionToken;
+      nextState.userName = update.data.userName;
+      break;
     default:
       throw new Error('Unexpected state request');
   }
@@ -216,21 +221,17 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
     });
   }, [dispatchAppUpdate, setOnDisconnect]);
 
+
   const page = useMemo(() => {
     if (!appState.sessionToken) {
-      return <Login doLogin={setupGameController} />;
-    } if (!videoInstance) {
-      return <div>Loading...</div>;
+      return <Login setLogin={(data) => dispatchAppUpdate({ action: 'doLogin', data: { sessionToken: data.sessionToken, userName: data.userName } })} />; 
     }
-    return (
-      <div>
-        <WorldMap />
-        <VideoOverlay preferredMode="fullwidth" />
-      </div>
-    );
-  }, [setupGameController, appState.sessionToken, videoInstance]);
+    if (!videoInstance) {
+      // return <div>Loading...</div>;
+    }
+    return <HomePage doLogin={setupGameController} userName={appState.userName} />
+  }, [setupGameController, appState.sessionToken, videoInstance, appState.userName]);
   return (
-
     <CoveyAppContext.Provider value={appState}>
       <VideoContext.Provider value={Video.instance()}>
         <NearbyPlayersContext.Provider value={appState.nearbyPlayers}>
@@ -238,7 +239,6 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
         </NearbyPlayersContext.Provider>
       </VideoContext.Provider>
     </CoveyAppContext.Provider>
-
   );
 }
 

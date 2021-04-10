@@ -25,11 +25,12 @@ import { CoveyTownInfo, TownJoinResponse, } from '../../classes/TownsServiceClie
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 
 interface TownSelectionProps {
-  doLogin: (initData: TownJoinResponse) => Promise<boolean>
+  doLogin: (initData: TownJoinResponse) => Promise<boolean>,
+  userID: string,
 }
 
-export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Element {
-  const [userName, setUserName] = useState<string>(Video.instance()?.userName || '');
+export default function TownSelection({ doLogin, userID }: TownSelectionProps): JSX.Element {
+  const [userName, setUserName] = useState<string>(userID);
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
@@ -39,7 +40,6 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
   const toast = useToast();
 
   const updateTownListings = useCallback(() => {
-    // console.log(apiClient);
     apiClient.listTowns()
       .then((towns) => {
         setCurrentPublicTowns(towns.towns
