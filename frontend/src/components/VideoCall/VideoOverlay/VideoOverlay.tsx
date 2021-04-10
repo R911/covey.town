@@ -45,43 +45,58 @@ export default function VideoGrid(props: Props) {
   const roomState = useRoomState();
   const coveyController = useMaybeVideo();
 
-  const { stopAudio } = useLocalAudioToggle();
-  const { stopVideo } = useLocalVideoToggle();
+  const { stopAudio, toggleAudioEnabled } = useLocalAudioToggle();
+  const { stopVideo, toggleVideoEnabled } = useLocalVideoToggle();
   const {myPlayerID, players} = useCoveyAppState();
   const unmountRef = useRef<() => void>();
   const unloadRef = useRef<EventListener>();
   const existingRoomRef = useRef<TwilioRoom | undefined>();
   const [mediaError, setMediaError] = useState<Error>();
   const presenting = usePresenting();
+  let disableAudio = false;
+  let disableVideo = true;
 
   let coveyRoom = coveyController?.coveyTownID;
   if (!coveyRoom) coveyRoom = 'Disconnected';
 
   useEffect(()=>{
-    console.log(players);
-    console.log(myPlayerID);
-    if(myPlayerID){
-      if(players){
-        const me = players.find((player)=>{myPlayerID===player.id});
-        console.log('me');
-        console.log(me);
+
+    async function disableAudioFunc(){
+      try {
+        disableAudio = true;
+        await stopAudio();
+        console.log('Audio Disabled');
+      } catch {}
+    }
+
+    async function disableVideoFunc(){
+      try {
+        disableVideo = true;
+        await stopVideo();
+        console.log('Video disabled');
+      } catch {}
+    }
+
+    if(myPlayerID!==undefined){
+      if(players!==undefined){
+        const me = players.find(player=>player.id===myPlayerID);
         if(me){
           if(me.privileges){
             if(!me.privileges.audio){
               try {
-                stopAudio();
+                disableAudioFunc();
               } catch {}
             }
             if(!me.privileges.video){
               try {
-                stopVideo();
+                disableVideoFunc();
               } catch {}
             }
           }
         }
       }
     }
-  },[]);
+  },[toggleVideoEnabled,toggleAudioEnabled]);
 
   useEffect(() => {
     function stop() {
@@ -155,7 +170,7 @@ export default function VideoGrid(props: Props) {
             <ReconnectingNotification />
             <MobileTopMenuBar />
             <Room />
-            <MenuBar setMediaError={setMediaError} />
+            <MenuBar setMediaError={setMediaError} disableAudio disableVideo/>
           </Main>
         )}
         <MediaErrorSnackbar error={mediaError} dismissError={() => setMediaError(undefined)} />

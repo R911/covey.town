@@ -34,7 +34,7 @@ export default function ToggleAudioButton(props: {
       className={props.className}
       onClick={toggleAudio}
       disabled={props.disabled || !hasAudioDevices}
-      startIcon={isAudioEnabled ? <MicIcon /> : <MicOffIcon />}
+      startIcon={isAudioEnabled && !props.disabled ? <MicIcon /> : <MicOffIcon />}
       data-cy-audio-toggle
     >
       {!hasAudioDevices ? 'No audio devices' : isAudioEnabled ? 'Mute' : 'Unmute'}

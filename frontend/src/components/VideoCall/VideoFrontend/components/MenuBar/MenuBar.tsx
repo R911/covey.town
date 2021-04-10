@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-export default function MenuBar(props: { setMediaError?(error: Error): void }) {
+export default function MenuBar(props: { setMediaError?(error: Error): void, disableAudio: boolean, disableVideo: boolean}) {
   const classes = useStyles();
   const { isSharingScreen, toggleScreenShare } = useVideoContext();
   const roomState = useRoomState();
@@ -81,8 +81,8 @@ export default function MenuBar(props: { setMediaError?(error: Error): void }) {
         <Grid container justify="space-around" alignItems="center">
           <Grid item>
             <Grid container justify="center">
-              <ToggleAudioButton disabled={isReconnecting} setMediaError={props.setMediaError} />
-              <ToggleVideoButton disabled={isReconnecting} setMediaError={props.setMediaError} />
+              <ToggleAudioButton disabled={isReconnecting || props.disableAudio} setMediaError={props.setMediaError} />
+              <ToggleVideoButton disabled={isReconnecting || props.disableVideo} setMediaError={props.setMediaError} />
               <Hidden smDown>
                 {!isSharingScreen && <ToggleScreenShareButton disabled={isReconnecting} />}
               </Hidden>

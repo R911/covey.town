@@ -1,9 +1,9 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import assert from 'assert';
-import { UserLocation } from '../CoveyTypes';
+import { UserLocation, UserPrivileges } from '../CoveyTypes';
 
 
-export type ServerPlayer = { _id: string, _userName: string, location: UserLocation };
+export type ServerPlayer = { _id: string, _userName: string, location: UserLocation, privileges: UserPrivileges };
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware

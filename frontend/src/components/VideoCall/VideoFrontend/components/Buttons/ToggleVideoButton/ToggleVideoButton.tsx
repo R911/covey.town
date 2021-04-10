@@ -35,7 +35,7 @@ export default function ToggleVideoButton(props: {
       className={props.className}
       onClick={toggleVideo}
       disabled={!hasVideoDevices || props.disabled}
-      startIcon={isVideoEnabled ? <VideoOnIcon /> : <VideoOffIcon />}
+      startIcon={isVideoEnabled && !props.disabled ? <VideoOnIcon /> : <VideoOffIcon />}
     >
       {!hasVideoDevices ? 'No video devices' : isVideoEnabled ? 'Stop Video' : 'Start Video'}
     </Button>
