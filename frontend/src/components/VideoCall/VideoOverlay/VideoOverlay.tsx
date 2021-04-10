@@ -53,8 +53,6 @@ export default function VideoGrid(props: Props) {
   const existingRoomRef = useRef<TwilioRoom | undefined>();
   const [mediaError, setMediaError] = useState<Error>();
   const presenting = usePresenting();
-  let disableAudio = false;
-  let disableVideo = false;
 
   let coveyRoom = coveyController?.coveyTownID;
   if (!coveyRoom) coveyRoom = 'Disconnected';
@@ -86,13 +84,11 @@ export default function VideoGrid(props: Props) {
               if(audioEnabled){
                 closeAudio();
               }
-              disableAudio = true;
             }
             if(!me.privileges.video){
               if(videoEnabled){
                 closeVideo();
               }
-              disableVideo = true;
             }
           }
         }
@@ -172,7 +168,7 @@ export default function VideoGrid(props: Props) {
             <ReconnectingNotification />
             <MobileTopMenuBar />
             <Room />
-            <MenuBar setMediaError={setMediaError} disableAudio disableVideo/>
+            <MenuBar setMediaError={setMediaError}/>
           </Main>
         )}
         <MediaErrorSnackbar error={mediaError} dismissError={() => setMediaError(undefined)} />
