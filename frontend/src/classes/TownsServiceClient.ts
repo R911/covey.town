@@ -25,6 +25,9 @@ export interface TownJoinResponse {
   /** Secret token that this player should use to authenticate
    * in future requests to the video service * */
   providerVideoToken: string;
+
+  providerChatToken: string;
+  
   /** List of players currently in this town * */
   currentPlayers: ServerPlayer[];
   /** Friendly name of this town * */
@@ -33,6 +36,16 @@ export interface TownJoinResponse {
   isPubliclyListed: boolean;
 
   capacity: number;
+}
+
+export interface TownParticipantsRequest {
+  /** ID of the town to get participants for  * */
+  coveyTownID: string;
+}
+
+export interface TownParticipantsResponse {
+  /** List of players currently in this town * */
+  participants: ServerPlayer[];
 }
 
 /**
@@ -170,6 +183,11 @@ export default class TownsServiceClient {
 
   async joinTown(requestData: TownJoinRequest): Promise<TownJoinResponse> {
     const responseWrapper = await this._axios.post('/sessions', requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async getParticipants(requestData: TownParticipantsRequest): Promise<TownParticipantsResponse> {
+    const responseWrapper = await this._axios.get(`/towns/participants/${requestData.coveyTownID}`);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
