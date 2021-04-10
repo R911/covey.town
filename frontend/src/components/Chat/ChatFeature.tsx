@@ -9,14 +9,13 @@ import {
   Text,
   createStandaloneToast,
 } from '@chakra-ui/react';
-// npm i --save react-select
 import Select from 'react-select';
 import { nanoid } from 'nanoid';
 import assert from 'assert';
 import { Message } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
-import { ServerPlayer } from '../../classes/Player';
+import Player, { ServerPlayer } from '../../classes/Player';
 import Chat from '../../classes/Chat/Chat';
 
 /**
@@ -27,7 +26,8 @@ export default function ChatFeature(): JSX.Element {
   const { apiClient, players, myPlayerID} = useCoveyAppState();
   const [typedMessage, setTypedMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [participants, setParticipants] = useState<ServerPlayer[]>();
+  // const [participants, setParticipants] = useState<ServerPlayer[]>();
+  const [participants, setParticipants] = useState<Player[]>();
   const [participantsToSendTo, setParticipantsToSendTo] = useState<string[]>([]);
   const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
   const playerUserName = (Video.instance()?.userName || '');
@@ -101,9 +101,9 @@ export default function ChatFeature(): JSX.Element {
     assert(currentCoveyTownID);
     setCoveyTownID(currentCoveyTownID);
 
-    apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
-      setParticipants(players.participants);
-    });
+    // apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
+    setParticipants(players);
+    // });
   }, [setParticipants, apiClient]);
   useEffect(() => {
     updateParticipantsListing();
@@ -142,8 +142,8 @@ export default function ChatFeature(): JSX.Element {
    */
   const options = [{ value: `${coveyTownID}`, label: 'Everyone' }];
   participants?.forEach(participant => {
-    if (participant._userName !== playerUserName) {
-      options.push({ value: participant._id, label: participant._userName });
+    if (participant.userName !== playerUserName) {
+      options.push({ value: participant.id, label: participant.userName });
     }
   });
 
