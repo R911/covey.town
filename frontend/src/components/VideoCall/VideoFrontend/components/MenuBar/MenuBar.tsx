@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 import Button from '@material-ui/core/Button';
@@ -15,6 +15,7 @@ import ToggleScreenShareButton from '../Buttons/ToogleScreenShareButton/ToggleSc
 import TownSettings from '../../../../Login/TownSettings';
 import MenuContainer from '@material-ui/core/Menu';
 import AdminControl from './Admin/AdminControl';
+import useCoveyAppState from '../../../../../hooks/useCoveyAppState';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   container: {
@@ -68,6 +69,17 @@ export default function MenuBar(props: { setMediaError?(error: Error): void}) {
   const { isSharingScreen, toggleScreenShare } = useVideoContext();
   const roomState = useRoomState();
   const isReconnecting = roomState === 'reconnecting';
+  const {myPlayerID, players} = useCoveyAppState();
+  const [isAdmin, setAdmin] = useState<boolean>(false);
+
+  useEffect(() => {
+    const player = players.find(player => player.id === myPlayerID);
+    if(player!==undefined){
+      if(player.privileges!==undefined){
+        setAdmin(player.privileges?.admin);
+      }      
+    }
+  },[players]);
 
   return (
     <>
@@ -93,7 +105,7 @@ export default function MenuBar(props: { setMediaError?(error: Error): void}) {
             <Grid style={{ flex: 1 }}>
               <Grid container justify="flex-end">
                 <TownSettings />
-                <AdminControl />
+                {isAdmin && <AdminControl />}
                 <Menu />
                 <EndCallButton />
               </Grid>

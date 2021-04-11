@@ -35,14 +35,13 @@ interface TownSelectionProps {
 }
 
 export default function TownSelection({ doLogin, userID }: TownSelectionProps): JSX.Element {
-  const [userName, setUserName] = useState<string>(userID);
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
   const [currentPublicTowns, setCurrentPublicTowns] = useState<CoveyTownInfo[]>();
   const [townSize, setTownSize] = useState(50);
   const { connect } = useVideoContext();
-  const { apiClient, myPlayerID, currentTownID } = useCoveyAppState();
+  const { apiClient, myPlayerID, currentTownID, userName } = useCoveyAppState();
   const toast = useToast();
 
   const updateTownListings = useCallback(() => {
@@ -53,6 +52,8 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
         );
       })
   }, [setCurrentPublicTowns, apiClient]);
+
+
   useEffect(() => {
     updateTownListings();
     const timer = setInterval(updateTownListings, 2000);
@@ -80,7 +81,7 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
           });
           return;
         }
-        const initData = await Video.setup(userName, coveyRoomID);
+        const initData = await Video.setup(userName, myPlayerID, coveyRoomID);
         await Chat.setup(initData.coveyUserID, userName, coveyRoomID  , initData.providerChatToken);
         const loggedIn = await doLogin(initData);
         if (loggedIn) {
@@ -95,8 +96,20 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
         });
       }
     },
-    [userName, doLogin, toast, connect, myPlayerID, currentTownID],
+    [userName, doLogin, toast, connect, myPlayerID],
   );
+
+  const makeAdmin = async(coveyTownID:string, coveyTownPassword:string) => {
+    try {
+      await apiClient.modifyPlayer({coveyTownID, coveyTownPassword,userId:myPlayerID, playerId:myPlayerID, isAdmin:true});
+    } catch (err) {
+      toast({
+        title: 'Unable to modify player',
+        description: err.toString(),
+        status: 'error'
+      })
+    }
+  };
 
   const handleCreate = async () => {
     if (!userName || userName.length === 0) {
@@ -145,6 +158,7 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
         isClosable: true,
         duration: null,
       });
+      await makeAdmin(newTownInfo.coveyTownID, newTownInfo.coveyTownPassword);
       await handleJoin(newTownInfo.coveyTownID);
     } catch (err) {
       toast({
@@ -161,19 +175,8 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
         <Stack>
           <Box p='4' borderWidth='1px' borderRadius='lg'>
             <Heading as='h2' size='lg'>
-              Select a username
+              Welcome {userName}
             </Heading>
-
-            <FormControl>
-              <FormLabel htmlFor='name'>Name</FormLabel>
-              <Input
-                autoFocus
-                name='name'
-                placeholder='Your name'
-                value={userName}
-                onChange={event => setUserName(event.target.value)}
-              />
-            </FormControl>
           </Box>
           <Box borderWidth='1px' borderRadius='lg'>
             <Heading p='4' as='h2' size='lg'>
