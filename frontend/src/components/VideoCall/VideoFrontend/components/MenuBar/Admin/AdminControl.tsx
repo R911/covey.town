@@ -34,11 +34,10 @@ import Player from '../../../../../../classes/Player';
 import {PlayerUpdateRequest} from '../../../../../../classes/TownsServiceClient';
 
 const AdminControl: React.FunctionComponent = () => {
-  const {isOpen, onOpen, onClose, onToggle} = useDisclosure()
+  const {isOpen, onOpen, onClose} = useDisclosure()
   const video = useMaybeVideo()
   const {currentTownID, currentTownFriendlyName, myPlayerID, players, apiClient} = useCoveyAppState();
   const [townPassword, setTownPassword] = useState<string>('');
-  const [userPassword, setUserPassword] = useState<string>('');
   const [privilegeMap, setPrivilegeMap] = useState(new Map<string, Player| undefined>());
 
   const toast = useToast();
@@ -50,14 +49,13 @@ const AdminControl: React.FunctionComponent = () => {
 
   const closeSettings = useCallback(()=>{
     onClose();
+    setTownPassword('');
     video?.unPauseGame();
   }, [onClose, video]);
 
   const handleBan = async (playerId: string) => {
     try {
-      console.log(townPassword);
-      console.log(userPassword);
-      await apiClient.banPlayer({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID, userPassword:userPassword, playerId});
+      await apiClient.banPlayer({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID, playerId});
     } catch (err) {
       toast({
         title: 'Unable to connect to Towns Service',
@@ -69,7 +67,7 @@ const AdminControl: React.FunctionComponent = () => {
 
   const handleEmptyTown = async () => {
     try {
-      await apiClient.emptyTown({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID, userPassword:userPassword});
+      await apiClient.emptyTown({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID});
     } catch (err) {
       toast({
         title: 'Unable to connect to Towns Service',
@@ -92,37 +90,36 @@ const AdminControl: React.FunctionComponent = () => {
   };
 
   const handleAudioBan = async (playerId: string) => {
-    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, audioAccess:false});
+    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId, audioAccess:false});
   };
 
   const handleVideoBan = async (playerId: string) => {
-    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, videoAccess:false});
+    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId, videoAccess:false});
   };
 
   const handleChatBan = async (playerId: string) => {
-    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, chatAccess:false});
+    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId, chatAccess:false});
   };
 
   const promoteToAdmin = async (playerId: string) => {
-    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, isAdmin:true});
+    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId, isAdmin:true});
   };
 
   const handleAllAudioBan = async () => {
-    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId: player.id, audioAccess:false});});
+    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, audioAccess:false});});
   };
 
   const handleAllVideoBan = async () => {
-    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId: player.id, videoAccess:false});});
+    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, videoAccess:false});});
   };
 
   const handleAllChatBan = async () => {
-    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId: player.id, chatAccess:false});});
+    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, chatAccess:false});});
   };
 
   useEffect(() => {
     players?.map((player) => {
       setPrivilegeMap(privilegeMap.set(player.id, player));
-      console.log(player);
     });
   },[players]);
 
@@ -142,11 +139,6 @@ const AdminControl: React.FunctionComponent = () => {
               <Input id="townPassword" autoFocus name="townPassword" placeholder="Town Password"
                      value={townPassword}
                      onChange={(event) => setTownPassword(event.target.value) } type="password"
-              />
-              <FormLabel htmlFor="userPassword">Your Password</FormLabel>
-              <Input id="userPassword" autoFocus name="userPassword" placeholder="Your Password"
-                     value={userPassword}
-                     onChange={(event) => setUserPassword(event.target.value) } type="password"
               />
             </FormControl>
           <Table>

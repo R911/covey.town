@@ -1,25 +1,25 @@
 import BodyParser from 'body-parser';
-import Knex from 'knex';
 import crypto from 'crypto';
-import session from 'express-session';
 import dotenv from 'dotenv';
 import { Express } from 'express';
+import session from 'express-session';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
+import Knex from 'knex';
 import io from 'socket.io';
 import {
+  banPlayerHandler,
   emptyRoomHandler,
   playerUpdateHandler,
-  townCreateHandler, townDeleteHandler,
+  townCreateHandler,
+  townDeleteHandler,
   townJoinHandler,
   townListHandler,
   townPartcipantListHandler,
   townSubscriptionHandler,
   townUpdateHandler,
-  banPlayerHandler,
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';
-
 
 dotenv.config();
 
@@ -30,7 +30,6 @@ declare module 'express-session' {
 }
 
 export default function addTownRoutes(http: Server, app: Express): io.Server {
-  
   const db = Knex({
     client: 'pg',
     connection: {
@@ -41,7 +40,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
     },
   });
 
-  app.use(session({secret: '1234567890QWERT', cookie: { secure: true }}));
+  app.use(session({ secret: '1234567890QWERT', cookie: { secure: true } }));
 
   /*
    * Create a new session (aka join a town)
@@ -51,7 +50,6 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
       const result = await townJoinHandler({
         userName: req.body.userName,
         coveyTownID: req.body.coveyTownID,
-        capacity: req.body.capacity,
       });
       console.log(result);
       res.status(StatusCodes.OK).json(result);
@@ -153,21 +151,18 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         coveyTownID: req.body.coveyTownID,
         coveyTownPassword: req.body.coveyTownPassword,
         userId: req.params.userId,
-        userPassword: req.body.userPassword,
         playerId: req.body.playerId,
         videoAccess: req.body.videoAccess,
         audioAccess: req.body.audioAccess,
         chatAccess: req.body.chatAccess,
         isAdmin: req.body.isAdmin,
       });
-      res.status(StatusCodes.OK)
-        .json(result);
+      res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({
-          message: 'Internal server error, please see log in server for more details',
-        });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
     }
   });
 
@@ -181,17 +176,14 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         coveyTownID: req.body.coveyTownID,
         coveyTownPassword: req.body.coveyTownPassword,
         userId: req.params.userId,
-        userPassword: req.body.userPassword,
         playerId: req.body.playerId,
       });
-      res.status(StatusCodes.OK)
-        .json(result);
+      res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({
-          message: 'Internal server error, please see log in server for more details',
-        });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
     }
   });
 
@@ -204,16 +196,13 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         coveyTownID: req.params.townID,
         coveyTownPassword: req.body.coveyTownPassword,
         userId: req.body.userId,
-        userPassword: req.body.userPassword,
       });
-      res.status(StatusCodes.OK)
-        .json(result);
+      res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({
-          message: 'Internal server error, please see log in server for more details',
-        });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
     }
   });
 
@@ -224,7 +213,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
     const { userName, userPassword } = req.body;
     await db('accounts')
       .where('user_name', '=', userName)
-      .then(async (data) => {
+      .then(async data => {
         const result = {
           isOK: true,
           response: {},
@@ -239,7 +228,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
           await db('accounts')
             .where('user_name', '=', userName)
             .where('password', '=', userPassword)
-            .then((dataPassword) => {
+            .then(dataPassword => {
               if (dataPassword.length) {
                 const token = crypto.randomBytes(16).toString('base64');
                 req.session.sessionToken = token;
@@ -251,14 +240,12 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
                 };
               }
             })
-            .catch(() => {
-            });
+            .catch(() => {});
         }
         result.response = resp;
         return res.json(result);
       })
-      .catch(() => {
-      });
+      .catch(() => {});
   });
 
   /**
@@ -268,7 +255,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
     const { userName, userPassword } = req.body;
     await db('accounts')
       .where('user_name', '=', userName)
-      .then(async (data) => {
+      .then(async data => {
         const result = {
           isOK: true,
           response: {},
@@ -295,25 +282,22 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
                 userName,
               };
             })
-            .catch(() => {
-            });
+            .catch(() => {});
         }
         result.response = resp;
         return res.json(result);
       })
-      .catch(() => {
-      });
+      .catch(() => {});
   });
 
   /**
-   * 
+   *
    */
   app.post('/logout', BodyParser.json(), async (req, res) => {
     req.session.destroy(() => {
       res.redirect('/');
     });
   });
-  
 
   const socketServer = new io.Server(http, { cors: { origin: '*' } });
   socketServer.on('connection', townSubscriptionHandler);

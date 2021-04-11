@@ -77,7 +77,7 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
       } else {
         setLogin({
           authToken: response.sessionToken,
-          userName: response.userName,
+          userName: response.user_name,
         })
       }
     });
@@ -124,7 +124,7 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
       } else {
         setLogin({
           sessionToken: response.sessionToken,
-          userName: response.userName,
+          userName: response.user_name,
         })
       }
     });
