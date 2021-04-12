@@ -9,13 +9,14 @@ import {
   Text,
   createStandaloneToast,
 } from '@chakra-ui/react';
+// npm i --save react-select
 import Select from 'react-select';
 import { nanoid } from 'nanoid';
 import assert from 'assert';
 import { Message } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
-import Player, { ServerPlayer } from '../../classes/Player';
+import { ServerPlayer } from '../../classes/Player';
 import Chat from '../../classes/Chat/Chat';
 
 /**
@@ -23,11 +24,10 @@ import Chat from '../../classes/Chat/Chat';
  * and whole group chats
  */
 export default function ChatFeature(): JSX.Element {
-  const { apiClient, players, myPlayerID} = useCoveyAppState();
+  const { apiClient} = useCoveyAppState();
   const [typedMessage, setTypedMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
-  // const [participants, setParticipants] = useState<ServerPlayer[]>();
-  const [participants, setParticipants] = useState<Player[]>();
+  const [participants, setParticipants] = useState<ServerPlayer[]>();
   const [participantsToSendTo, setParticipantsToSendTo] = useState<string[]>([]);
   const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
   const playerUserName = (Video.instance()?.userName || '');
@@ -35,15 +35,6 @@ export default function ChatFeature(): JSX.Element {
   const [coveyTownID, setCoveyTownID] = useState<string>('');
 
   useEffect(() => {
-    let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
-    if (!chatPrivilege) {
-      chatPrivilege = true;
-    }
-    setUserChatPrivilege(chatPrivilege);
-  }, [players]);
-
-  useEffect(() => {
-
     /**
      * This function adds the new message to the current list of sent messages.
      * 
@@ -101,9 +92,9 @@ export default function ChatFeature(): JSX.Element {
     assert(currentCoveyTownID);
     setCoveyTownID(currentCoveyTownID);
 
-    // apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
-    setParticipants(players);
-    // });
+    apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
+      setParticipants(players.participants);
+    });
   }, [setParticipants, apiClient]);
   useEffect(() => {
     updateParticipantsListing();
@@ -142,8 +133,8 @@ export default function ChatFeature(): JSX.Element {
    */
   const options = [{ value: `${coveyTownID}`, label: 'Everyone' }];
   participants?.forEach(participant => {
-    if (participant.userName !== playerUserName) {
-      options.push({ value: participant.id, label: participant.userName });
+    if (participant._userName !== playerUserName) {
+      options.push({ value: participant._id, label: participant._userName });
     }
   });
 

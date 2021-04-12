@@ -1,31 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Flex, Heading, Input, Text } from '@chakra-ui/react';
 import { nanoid } from 'nanoid';
+// import ChatClient from 'twilio-chat';
 import assert from 'assert';
+// import { Channel } from 'twilio-chat/lib/channel';
 import { Message } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import Chat from '../../classes/Chat/Chat';
-import useCoveyAppState from '../../hooks/useCoveyAppState';
 
 /**
  * Meeting notes feature where participants can add notes that can be accessed by
  * all users in the town.
  */
 export default function MeetingNotes(): JSX.Element {
-  const {players, myPlayerID} = useCoveyAppState();
   const [typedNote, setTypedNote] = useState<string>('');
   const [meetingNotes, setMeetingNotes] = useState<Message[]>([]);
-  const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
+  const [userMeetingPrivilege] = useState<boolean>(true);
   const playerUserName = Video.instance()?.userName || ''
   const chat = Chat.instance();
-
-  useEffect(() => {
-    let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
-    if (!chatPrivilege) {
-      chatPrivilege = true;
-    }
-    setUserMeetingPrivilege(chatPrivilege);
-  }, [players]);
 
 
   /**
