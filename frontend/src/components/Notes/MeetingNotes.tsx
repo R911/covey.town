@@ -15,15 +15,14 @@ export default function MeetingNotes(): JSX.Element {
   const [channel, setChannel] = useState<Channel>();
   const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
   const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
-  const chat = Chat.instance();
+  const [chat] = useState<Chat>(Chat.instance());
 
   function sendNote(noteToSend: string) {
     setTypedNote('');
-    chat?.sendMeetingNote(`${playerUserName}: ${noteToSend}`);
+    chat.sendMeetingNote(`${playerUserName}: ${noteToSend}`);
   }
 
   useEffect(() => {
-    assert(chat);
 
     const onNoteAdded = (message: Message): void => {
       setMeetingNotes(arr => [...arr, message]);

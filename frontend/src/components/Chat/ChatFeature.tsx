@@ -22,7 +22,7 @@ import { ServerPlayer } from '../../classes/Player';
 import Chat from '../../classes/Chat/Chat';
 
 export default function ChatFeature(): JSX.Element {
-  const { apiClient, chatToken } = useCoveyAppState();
+  const { apiClient } = useCoveyAppState();
   const [typedMessage, setTypedMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [participants, setParticipants] = useState<ServerPlayer[]>();
@@ -32,46 +32,45 @@ export default function ChatFeature(): JSX.Element {
   const [channel, setChannel] = useState<Channel>();
   const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
   const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
-  const chat = Chat.instance();
+  const [chat] = useState<Chat>(Chat.instance());
   const [coveyTownID, setCoveyTownID] = useState<string>('');
 
+ 
+
   useEffect(() => {
+    // console.log('messageHandler', participantsToSendTo);
     const handleMessageAdded = (message: Message) => {
       // handles both the sent and received messages
       setMessages(arr => [...arr, message]);
     };
-
-    async function newMessageAlert(message: Message) {
+  
+    const newMessageAlert = async (message: Message) => {
       const toast = createStandaloneToast();
-      let listenerString;
-      if (participantsToSendTo[0] === coveyTownID) {
-        listenerString = 'Everyone';
-      } else {
-        const listeners = await message.channel.getMembers();
-        const listenerIDs = listeners.map(l => l.identity);
-        listenerIDs.sort();
-        listenerString = listenerIDs.join(',');
-      }
-
+      const listeners = await message.channel.getMembers();
+      const listenerIDs = listeners.map(l => l.identity);
+      listenerIDs.sort();
+      const listenerString = listenerIDs.join('-');
+  
       toast({
-        title: `New Message From ${listenerString}`,
+        title: `New Message in ${listenerString}`,
         position: 'bottom-right',
         duration: 9000,
         isClosable: true,
       });
-
-      const participantIDs = participantsToSendTo;
+  
+      const participantIDs = participantsToSendTo.slice(0);
+      participantIDs.push(playerUserName);
       participantIDs.sort();
       const participantString = participantIDs.join('-');
-
-      if (participantsToSendTo[0] === coveyTownID || listenerString === participantString) {
+      console.log(listenerIDs, participantIDs);
+  
+      if (listenerString === participantString) {
         handleMessageAdded(message);
       }
-    }
-
+    };
     assert(chat);
     chat.handleChatMessageAdded = newMessageAlert;
-  }, [chat, coveyTownID, participantsToSendTo]);
+  }, [chat, participantsToSendTo, playerUserName]);
 
   const updateParticipantsListing = useCallback(() => {
     // console.log(apiClient);
@@ -82,12 +81,9 @@ export default function ChatFeature(): JSX.Element {
 
     apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
       setParticipants(players.participants);
-
-      // apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
-      // setParticipants(players.participants.sort().map(player => player._userName));
-      // console.log(players);
     });
   }, [setParticipants, apiClient]);
+
   useEffect(() => {
     updateParticipantsListing();
     const timer = setInterval(updateParticipantsListing, 5000);
@@ -99,7 +95,8 @@ export default function ChatFeature(): JSX.Element {
   // Need to send messages to only the participants checked in the checkbox
   function sendMessage(messageToSend: string) {
     setTypedMessage('');
-    chat?.sendChatMessage(participantsToSendTo, `${playerUserName}: ${messageToSend}`);
+    const chatParticipants = participantsToSendTo.slice(0);
+    chat?.sendChatMessage(chatParticipants, `${playerUserName}: ${messageToSend}`);
   }
 
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -120,14 +117,25 @@ export default function ChatFeature(): JSX.Element {
   });
 
   function handleChange(listOfParticipants: any[]) {
-    async function loadChat() {
-      setParticipantsToSendTo(() => listOfParticipants);
-      assert(chat);
-      const messageHistory = await chat.initChat(listOfParticipants, false);
-      setMessages(messageHistory);
-    }
-    loadChat();
+    console.log(listOfParticipants);
+    setParticipantsToSendTo(() => listOfParticipants);
   }
+
+  useEffect(() => {
+    async function loadChat() {
+      assert(chat);
+      console.log(participantsToSendTo);
+      const chatParticipants = participantsToSendTo.slice(0);
+      const messageHistory = await chat.initChat(chatParticipants, false);
+      setMessages(messageHistory);
+      console.log(participantsToSendTo);
+    }
+    if (participantsToSendTo.length > 0) {
+      loadChat();
+    } else {
+      setMessages([]);
+    }
+  }, [participantsToSendTo, chat]);
 
   return (
     <form>
@@ -158,7 +166,9 @@ export default function ChatFeature(): JSX.Element {
               isMulti
               variant='unstyled'
               options={options}
-              onChange={e => handleChange(Array.isArray(e) ? e.map(x => x.value) : [])}
+              onChange={e => {
+                handleChange(e.map(x => x.label));
+              }}
             />
           </Stack>
 
