@@ -7,6 +7,7 @@ import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import Knex from 'knex';
 import io from 'socket.io';
+import { nanoid } from 'nanoid';
 import {
   askToBecomeAdminHandler,
   banPlayerHandler,
@@ -52,7 +53,6 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         userName: req.body.userName,
         coveyTownID: req.body.coveyTownID,
       });
-      console.log(result);
       res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
@@ -268,9 +268,11 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
             error: 'User already Exists',
           };
         } else {
+          const userID = nanoid();
           await db('accounts')
             .insert([
               {
+                user_id: userID,
                 user_name: userName,
                 password: userPassword,
               },

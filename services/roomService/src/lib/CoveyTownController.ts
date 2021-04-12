@@ -116,7 +116,7 @@ export default class CoveyTownController {
     );
 
     // Create a chat token for this user to join this town
-    theSession.chatToken = await this._chatClient.getChatToken(newPlayer.id);
+    theSession.chatToken = await this._chatClient.getChatToken(newPlayer.userName);
 
     // Notify other players that this player has joined
     this._listeners.forEach(listener => listener.onPlayerJoined(newPlayer));

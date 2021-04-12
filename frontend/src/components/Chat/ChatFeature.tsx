@@ -9,78 +9,81 @@ import {
   Text,
   createStandaloneToast,
 } from '@chakra-ui/react';
-// npm i --save react-select
 import Select from 'react-select';
 import { nanoid } from 'nanoid';
 import assert from 'assert';
 import { Message } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
-import { ServerPlayer } from '../../classes/Player';
+import Player, { ServerPlayer } from '../../classes/Player';
 import Chat from '../../classes/Chat/Chat';
 
 /**
- * Chat feature where participants can send group chats, one-to-one chats, 
+ * Chat feature where participants can send group chats, one-to-one chats,
  * and whole group chats
  */
 export default function ChatFeature(): JSX.Element {
-  const { apiClient} = useCoveyAppState();
+  const { players, myPlayerID } = useCoveyAppState();
   const [typedMessage, setTypedMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [participants, setParticipants] = useState<ServerPlayer[]>();
+  // const [participants, setParticipants] = useState<ServerPlayer[]>();
+  const [participants, setParticipants] = useState<Player[]>();
   const [participantsToSendTo, setParticipantsToSendTo] = useState<string[]>([]);
   const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
-  const playerUserName = (Video.instance()?.userName || '');
-  const chat = Chat.instance();
+  const [playerUserName] = useState<string>(Video.instance()?.userName || '');
+  const [chat] = useState<Chat>(Chat.instance());
   const [coveyTownID, setCoveyTownID] = useState<string>('');
+
+  useEffect(() => {
+    let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
+    if (!chatPrivilege) {
+      chatPrivilege = true;
+    }
+    setUserChatPrivilege(chatPrivilege);
+  }, [myPlayerID, players]);
 
   useEffect(() => {
     /**
      * This function adds the new message to the current list of sent messages.
-     * 
-     * @param message Message to be sent out to recipients 
+     *
+     * @param message Message to be sent out to recipients
      */
     const handleMessageAdded = (message: Message) => {
       setMessages(arr => [...arr, message]);
     };
 
     /**
-     * This function creates a new message alert that is sent to users to 
+     * This function creates a new message alert that is sent to users to
      * inform them of a new message.
-     * 
+     *
      * @param message Message to be sent out to recipients
      */
     async function newMessageAlert(message: Message) {
       const toast = createStandaloneToast();
-      let listenerString;
-      if (participantsToSendTo[0] === coveyTownID) {
-        listenerString = 'Everyone';
-      } else {
-        const listeners = await message.channel.getMembers();
-        const listenerIDs = listeners.map(l => l.identity);
-        listenerIDs.sort();
-        listenerString = listenerIDs.join(',');
-      }
+      const listeners = await message.channel.getMembers();
+      const listenerIDs = listeners.map(l => l.identity);
+      listenerIDs.sort();
+      const listenerString = listenerIDs.join('-');
 
       toast({
-        title: `New Message From ${listenerString}`,
+        title: `New Message in ${listenerString}`,
         position: 'bottom-right',
         duration: 9000,
         isClosable: true,
       });
 
-      const participantIDs = participantsToSendTo;
+      const participantIDs = participantsToSendTo.slice(0);
+      participantIDs.push(playerUserName);
       participantIDs.sort();
       const participantString = participantIDs.join('-');
 
-      if (participantsToSendTo[0] === coveyTownID || listenerString === participantString) {
+      if (listenerString === participantString) {
         handleMessageAdded(message);
       }
     }
-
     assert(chat);
     chat.handleChatMessageAdded = newMessageAlert;
-  }, [chat, coveyTownID, participantsToSendTo]);
+  }, [chat, participantsToSendTo, playerUserName]);
 
   /**
    * This function updates the list of participants who are currently in the town.
@@ -92,10 +95,11 @@ export default function ChatFeature(): JSX.Element {
     assert(currentCoveyTownID);
     setCoveyTownID(currentCoveyTownID);
 
-    apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
-      setParticipants(players.participants);
-    });
-  }, [setParticipants, apiClient]);
+    // apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
+    setParticipants(players);
+    // });
+  }, [players]);
+
   useEffect(() => {
     updateParticipantsListing();
     const timer = setInterval(updateParticipantsListing, 5000);
@@ -106,18 +110,20 @@ export default function ChatFeature(): JSX.Element {
 
   /**
    * This function uses the API to send the chat message.
-   * 
-   * @param messageToSend Message to be sent out to recipients 
+   *
+   * @param messageToSend Message to be sent out to recipients
    */
   function sendMessage(messageToSend: string) {
     setTypedMessage('');
-    chat?.sendChatMessage(participantsToSendTo, `${playerUserName}: ${messageToSend}`);
+    const chatParticipants = participantsToSendTo.slice(0);
+    chatParticipants.push(playerUserName);
+    chat?.sendChatMessage(chatParticipants, `${playerUserName}: ${messageToSend}`);
   }
 
   /**
-   * This function always users to send messages using the "Enter" button on 
-   * the keyboard. 
-   * 
+   * This function always users to send messages using the "Enter" button on
+   * the keyboard.
+   *
    * @param event User event from keyboard
    */
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -133,25 +139,34 @@ export default function ChatFeature(): JSX.Element {
    */
   const options = [{ value: `${coveyTownID}`, label: 'Everyone' }];
   participants?.forEach(participant => {
-    if (participant._userName !== playerUserName) {
-      options.push({ value: participant._id, label: participant._userName });
+    if (participant.userName !== playerUserName) {
+      options.push({ value: participant.id, label: participant.userName });
     }
   });
 
   /**
    * This function initiates a chat from the selected list of participants.
-   * 
+   *
    * @param listOfParticipants participants to receive the current message
    */
-  function handleChange(listOfParticipants: any[]) {
+  function handleChange(listOfParticipants: string[]) {
+    setParticipantsToSendTo(() => listOfParticipants);
+  }
+
+  useEffect(() => {
     async function loadChat() {
-      setParticipantsToSendTo(() => listOfParticipants);
       assert(chat);
-      const messageHistory = await chat.initChat(listOfParticipants, false);
+      const chatParticipants = participantsToSendTo.slice(0);
+      chatParticipants.push(playerUserName);
+      const messageHistory = await chat.initChat(chatParticipants, false);
       setMessages(messageHistory);
     }
-    loadChat();
-  }
+    if (participantsToSendTo.length > 0) {
+      loadChat();
+    } else {
+      setMessages([]);
+    }
+  }, [participantsToSendTo, chat, playerUserName]);
 
   return (
     <form>
@@ -182,7 +197,9 @@ export default function ChatFeature(): JSX.Element {
               isMulti
               variant='unstyled'
               options={options}
-              onChange={e => handleChange(Array.isArray(e) ? e.map(x => x.value) : [])}
+              onChange={e => {
+                handleChange(e.map(x => x.label));
+              }}
             />
           </Stack>
 
