@@ -16,8 +16,8 @@ export default function MeetingNotes(): JSX.Element {
   const [typedNote, setTypedNote] = useState<string>('');
   const [meetingNotes, setMeetingNotes] = useState<Message[]>([]);
   const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
-  const playerUserName = Video.instance()?.userName || ''
-  const chat = Chat.instance();
+  const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
+  const [chat] = useState<Chat>(Chat.instance());
 
   useEffect(() => {
     let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
@@ -35,7 +35,7 @@ export default function MeetingNotes(): JSX.Element {
    */
   function sendNote(noteToSend: string) {
     setTypedNote('');
-    chat?.sendMeetingNote(`${playerUserName}: ${noteToSend}`);
+    chat.sendMeetingNote(`${playerUserName}: ${noteToSend}`);
   }
 
   useEffect(() => {
