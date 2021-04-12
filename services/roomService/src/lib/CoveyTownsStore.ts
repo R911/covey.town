@@ -174,4 +174,18 @@ export default class CoveyTownsStore {
     }
     return false;
   }
+
+  askToBecomeAdmin(coveyTownID: string, userId: string): boolean {
+    const existingTown = this.getControllerForTown(coveyTownID);
+    if (existingTown !== undefined) {
+      const user = existingTown.getPlayer(userId);
+      if (user === undefined || user.privileges.admin) {
+        return false;
+      }
+      existingTown.askToBecomeAdmin(user);
+      return true;
+    }
+
+    return false;
+  }
 }

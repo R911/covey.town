@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { Socket } from 'socket.io';
+import { AskToBecomeAdminRequest } from '../client/TownsServiceClient';
 import { CoveyTownList, UserLocation } from '../CoveyTypes';
 import CoveyTownsStore from '../lib/CoveyTownsStore';
 import CoveyTownListener from '../types/CoveyTownListener';
@@ -309,6 +310,20 @@ export async function banPlayerHandler(
   };
 }
 
+export async function askToBecomeAdminHandler(
+  requestData: AskToBecomeAdminRequest,
+): Promise<ResponseEnvelope<Record<string, null>>> {
+  const townStore = CoveyTownsStore.getInstance();
+  const success = townStore.askToBecomeAdmin(requestData.coveyTownID, requestData.userId);
+  return {
+    isOK: success,
+    response: {},
+    message: !success
+      ? 'Invalid town id or user id values specified. Please double check your ids.'
+      : undefined,
+  };
+}
+
 export async function emptyRoomHandler(
   requestData: EmptyRoomRequest,
 ): Promise<ResponseEnvelope<Record<string, null>>> {
@@ -354,6 +369,9 @@ function townSocketAdapter(socket: Socket): CoveyTownListener {
     },
     onPlayerUpdated(updatedPlayer: Player) {
       socket.emit('playerUpdated', updatedPlayer);
+    },
+    onPlayerAskToBecomeAdmin(player: Player) {
+      socket.emit('playerAskedToBecomeAdmin', player);
     },
   };
 }
