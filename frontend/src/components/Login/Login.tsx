@@ -77,7 +77,8 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
       } else {
         setLogin({
           authToken: response.sessionToken,
-          userName: response.user_name,
+          userName: response.userName,
+          userID: response.userID,
         })
       }
     });
@@ -93,8 +94,8 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
       setError("Please fill username and password");
       return false;
     }
-    if (userInfo.username.length < 8 || userInfo.username.length > 20) {
-      setError("User Name should be between 8 to 20 characters");
+    if (userInfo.username.length < 4 || userInfo.username.length > 20) {
+      setError("User Name should be between 4 to 20 characters");
       return false;
     }
     if(userInfo.password.length < 8 
@@ -137,7 +138,8 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
       } else {
         setLogin({
           authToken: response.sessionToken,
-          userName: response.user_name,
+          userName: response.userName,
+          userID: response.userID,
         })
       }
     });

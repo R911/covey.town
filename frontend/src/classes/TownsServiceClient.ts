@@ -135,7 +135,8 @@ export interface TownAuthorizationResponse {
     error: string,
     sessionToken: string,
     authToken: string,
-    user_name: string,
+    userName: string,
+    userID: string,
 }
 
 export interface AskToBecomeAdminRequest {
