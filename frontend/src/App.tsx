@@ -57,6 +57,7 @@ function defaultAppState(): CoveyAppState {
     currentTownCapacity: 50,
     sessionToken: '',
     authToken: '',
+    userID: '',
     userName: '',
     socket: null,
     currentLocation: {
@@ -83,6 +84,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
     currentLocation: state.currentLocation,
     nearbyPlayers: state.nearbyPlayers,
     userName: state.userName,
+    userID: state.userID,
     socket: state.socket,
     emitMovement: state.emitMovement,
     apiClient: state.apiClient,
@@ -158,7 +160,6 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       if (samePlayers(nextState.nearbyPlayers, state.nearbyPlayers)) {
         nextState.nearbyPlayers = state.nearbyPlayers;
       }
-
       break;
     case 'playerDisconnect':
       nextState.players = nextState.players.filter(player => player.id !== update.player.id);
@@ -182,7 +183,6 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
     default:
       throw new Error('Unexpected state request');
   }
-
   return nextState;
 }
 
@@ -202,7 +202,6 @@ async function GameController(
   assert(roomName);
   const {townCapacity} = video;
   assert(townCapacity);
-
   const socket = io(url, { auth: { token: sessionToken, coveyTownID: video.coveyTownID } });
   socket.on('newPlayer', (player: ServerPlayer) => {
     dispatchAppUpdate({
@@ -268,7 +267,6 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
       return Video.teardown();
     });
   }, [dispatchAppUpdate, setOnDisconnect]);
-
 
   const page = useMemo(() => {
     if (!appState.authToken) {

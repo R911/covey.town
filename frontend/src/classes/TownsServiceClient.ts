@@ -134,6 +134,7 @@ export interface TownAuthorizationResponse {
     status: integer,
     error: string,
     sessionToken: string,
+    authToken: string,
     user_name: string,
 }
 
