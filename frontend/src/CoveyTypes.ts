@@ -16,17 +16,19 @@ export type NearbyPlayers = {
   nearbyPlayers: Player[];
 };
 export type CoveyAppState = {
-  sessionToken: string;
-  chatToken: string;
-  userName: string;
-  currentTownFriendlyName: string;
-  currentTownID: string;
-  currentTownIsPubliclyListed: boolean;
-  myPlayerID: string;
-  players: Player[];
-  currentLocation: UserLocation;
-  nearbyPlayers: NearbyPlayers;
-  emitMovement: (location: UserLocation) => void;
-  socket: Socket | null;
-  apiClient: TownsServiceClient;
+  sessionToken: string,
+  authToken: string,
+  userName: string,
+  chatToken: string,
+  currentTownFriendlyName: string,
+  currentTownID: string,
+  currentTownIsPubliclyListed: boolean,
+  currentTownCapacity:number,
+  myPlayerID: string,
+  players: Player[],
+  currentLocation: UserLocation,
+  nearbyPlayers: NearbyPlayers,
+  emitMovement: (location: UserLocation) => void,
+  socket: Socket | null,
+  apiClient: TownsServiceClient,
 };

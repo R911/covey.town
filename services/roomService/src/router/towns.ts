@@ -1,4 +1,8 @@
 import BodyParser from 'body-parser';
+import Knex from 'knex';
+import crypto from 'crypto';
+import session from 'express-session';
+import dotenv from 'dotenv';
 import { Express } from 'express';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
@@ -16,7 +20,29 @@ import {
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';
 
+
+dotenv.config();
+
+declare module 'express-session' {
+  interface Session {
+    sessionToken: string;
+  }
+}
+
 export default function addTownRoutes(http: Server, app: Express): io.Server {
+  
+  const db = Knex({
+    client: 'pg',
+    connection: {
+      host: process.env.DATABASE_HOST,
+      user: process.env.DATABASE_USERNAME,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE,
+    },
+  });
+
+  app.use(session({secret: '1234567890QWERT', cookie: { secure: true }}));
+
   /*
    * Create a new session (aka join a town)
    */
@@ -94,6 +120,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         isPubliclyListed: req.body.isPubliclyListed,
         friendlyName: req.body.friendlyName,
         coveyTownPassword: req.body.coveyTownPassword,
+        capacity: req.body.capacity,
       });
       res.status(StatusCodes.OK).json(result);
     } catch (err) {
@@ -121,9 +148,10 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.patch('/player/:userId', BodyParser.json(), async (req, res) => {
     try {
+      // console.log(req.body);
       const result = await playerUpdateHandler({
-        coveyTownID: req.body.townID,
-        coveyTownPassword: req.body.townPassword,
+        coveyTownID: req.body.coveyTownID,
+        coveyTownPassword: req.body.coveyTownPassword,
         userId: req.params.userId,
         userPassword: req.body.userPassword,
         playerId: req.body.playerId,
@@ -148,9 +176,10 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
    */
   app.patch('/player/ban/:userId', BodyParser.json(), async (req, res) => {
     try {
+      // console.log(req);
       const result = await banPlayerHandler({
-        coveyTownID: req.body.townID,
-        coveyTownPassword: req.body.townPassword,
+        coveyTownID: req.body.coveyTownID,
+        coveyTownPassword: req.body.coveyTownPassword,
         userId: req.params.userId,
         userPassword: req.body.userPassword,
         playerId: req.body.playerId,
@@ -172,8 +201,8 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   app.patch('/towns/destroyAllSessions/:townID', BodyParser.json(), async (req, res) => {
     try {
       const result = await emptyRoomHandler({
-        coveyTownID: req.params.townId,
-        coveyTownPassword: req.body.townPassword,
+        coveyTownID: req.params.townID,
+        coveyTownPassword: req.body.coveyTownPassword,
         userId: req.body.userId,
         userPassword: req.body.userPassword,
       });
@@ -187,6 +216,104 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         });
     }
   });
+
+  /**
+   * POST: Check if a valid user to authenticate.
+   */
+  app.post('/login', BodyParser.json(), async (req, res) => {
+    const { userName, userPassword } = req.body;
+    await db('accounts')
+      .where('user_name', '=', userName)
+      .then(async (data) => {
+        const result = {
+          isOK: true,
+          response: {},
+        };
+        let resp = {};
+        if (!data.length) {
+          resp = {
+            status: 404,
+            error: 'User Not Found',
+          };
+        } else {
+          await db('accounts')
+            .where('user_name', '=', userName)
+            .where('password', '=', userPassword)
+            .then((dataPassword) => {
+              if (dataPassword.length) {
+                const token = crypto.randomBytes(16).toString('base64');
+                req.session.sessionToken = token;
+                resp = { ...dataPassword[0], sessionToken: token };
+              } else {
+                resp = {
+                  status: 404,
+                  error: 'Incorrect Password. Please Try Again',
+                };
+              }
+            })
+            .catch(() => {
+            });
+        }
+        result.response = resp;
+        return res.json(result);
+      })
+      .catch(() => {
+      });
+  });
+
+  /**
+   * POST: Add a new user to Covey Town.
+   */
+  app.post('/signUp', BodyParser.json(), async (req, res) => {
+    const { userName, userPassword } = req.body;
+    await db('accounts')
+      .where('user_name', '=', userName)
+      .then(async (data) => {
+        const result = {
+          isOK: true,
+          response: {},
+        };
+        let resp = {};
+        if (data.length) {
+          resp = {
+            status: 404,
+            error: 'User already Exists',
+          };
+        } else {
+          await db('accounts')
+            .insert([
+              {
+                user_name: userName,
+                password: userPassword,
+              },
+            ])
+            .then(() => {
+              const token = crypto.randomBytes(16).toString('base64');
+              req.session.sessionToken = token;
+              resp = {
+                sessionToken: token,
+                userName,
+              };
+            })
+            .catch(() => {
+            });
+        }
+        result.response = resp;
+        return res.json(result);
+      })
+      .catch(() => {
+      });
+  });
+
+  /**
+   * 
+   */
+  app.post('/logout', BodyParser.json(), async (req, res) => {
+    req.session.destroy(() => {
+      res.redirect('/');
+    });
+  });
+  
 
   const socketServer = new io.Server(http, { cors: { origin: '*' } });
   socketServer.on('connection', townSubscriptionHandler);

@@ -44,7 +44,7 @@ export default class CoveyTownsStore {
     return newTown;
   }
 
-  updateTown(coveyTownID: string, coveyTownPassword: string, friendlyName?: string, makePublic?: boolean): boolean {
+  updateTown(coveyTownID: string, coveyTownPassword: string, friendlyName?: string, makePublic?: boolean, capacity?: number): boolean {
     const existingTown = this.getControllerForTown(coveyTownID);
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       if (friendlyName !== undefined) {
@@ -55,6 +55,11 @@ export default class CoveyTownsStore {
       }
       if (makePublic !== undefined) {
         existingTown.isPubliclyListed = makePublic;
+      }
+      if ( capacity !== undefined){
+        if ( capacity>=10 && capacity<=150){
+          existingTown.capacity = capacity;
+        }
       }
       return true;
     }
@@ -79,19 +84,21 @@ export default class CoveyTownsStore {
     throw Error('Invalid townID provided, no such town exists');
   }
   
-    updatePlayer(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string, playerId: string, videoAccess?: boolean, audioAccess?: boolean, chatAccess?: boolean, isAdmin?:boolean): boolean{
+  updatePlayer(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string, playerId: string, videoAccess?: boolean, audioAccess?: boolean, chatAccess?: boolean, isAdmin?:boolean): boolean{
     const existingTown = this.getControllerForTown(coveyTownID); 
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);
+      /*
       if (!user?.privilages.admin){
         return false;
       }
+      */
       // if(user.password !== userPassword) return false;
       const modifiedPlayer = existingTown.getPlayer(playerId);
       if (modifiedPlayer===undefined || userPassword===undefined){
         return false;
       }
-      const userPrivilege = modifiedPlayer.privilages;
+      const userPrivilege = modifiedPlayer.privileges;
       if (videoAccess !== undefined){
         userPrivilege.video = videoAccess;
       }
@@ -104,42 +111,41 @@ export default class CoveyTownsStore {
       if (isAdmin !== undefined){
         userPrivilege.admin = isAdmin;
       }
-      modifiedPlayer.updatePrivilages(userPrivilege);
+      existingTown.updatePlayerPrivileges(modifiedPlayer, userPrivilege);
       return true;
     }
     return false;
   }
 
-  banPlayer(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string, playerId: string) : boolean {
-    const existingTown = this.getControllerForTown(coveyTownID); 
+  banPlayer(coveyTownID: string, coveyTownPassword: string, userId: string, _userPassword: string, playerId: string) : boolean {
+    const existingTown = this.getControllerForTown(coveyTownID);
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);
+      /*
       if (!user?.privilages.admin){
         return false;
       }
+      */
       // if(user.password !== userPassword) return false;
       const modifiedPlayerSession = existingTown.getSessionByPlayerId(playerId);
-      if (modifiedPlayerSession===undefined || userPassword===undefined){
+      if (modifiedPlayerSession===undefined || _userPassword===undefined){
         return false;
       }
-      existingTown.banPlayer(modifiedPlayerSession.player);
-      existingTown.destroySession(modifiedPlayerSession);
-
+      existingTown.banPlayer(modifiedPlayerSession);
       return true;
     }
     return false;
   }
 
-  emptyTown(coveyTownID: string, coveyTownPassword: string, userId: string, userPassword: string): boolean{
-    if (userPassword===undefined) {
-      return false;
-    }
-    const existingTown = this.getControllerForTown(coveyTownID); 
+  emptyTown(coveyTownID: string, coveyTownPassword: string, userId: string, _userPassword: string): boolean{
+    const existingTown = this.getControllerForTown(coveyTownID);
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);
+      /*
       if (!user?.privilages.admin){
         return false;
       }
+      */
       // if(user.password !== userPassword) return false;
       existingTown.disconnectAllPlayers();
       return true;

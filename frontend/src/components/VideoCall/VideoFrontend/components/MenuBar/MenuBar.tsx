@@ -14,6 +14,7 @@ import ToggleVideoButton from '../Buttons/ToggleVideoButton/ToggleVideoButton';
 import ToggleScreenShareButton from '../Buttons/ToogleScreenShareButton/ToggleScreenShareButton';
 import TownSettings from '../../../../Login/TownSettings';
 import MenuContainer from '@material-ui/core/Menu';
+import AdminControl from './Admin/AdminControl';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   container: {
@@ -62,7 +63,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-export default function MenuBar(props: { setMediaError?(error: Error): void }) {
+export default function MenuBar(props: { setMediaError?(error: Error): void}) {
   const classes = useStyles();
   const { isSharingScreen, toggleScreenShare } = useVideoContext();
   const roomState = useRoomState();
@@ -92,7 +93,7 @@ export default function MenuBar(props: { setMediaError?(error: Error): void }) {
             <Grid style={{ flex: 1 }}>
               <Grid container justify="flex-end">
                 <TownSettings />
-
+                <AdminControl />
                 <Menu />
                 <EndCallButton />
               </Grid>

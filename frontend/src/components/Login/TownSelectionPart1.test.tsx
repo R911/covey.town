@@ -87,6 +87,7 @@ function wrappedTownSelection() {
     currentTownID: '',
     currentTownIsPubliclyListed: false,
     currentTownFriendlyName: '',
+    currentTownCapacity:50,
     sessionToken: '',
     userName: '',
     socket: null,

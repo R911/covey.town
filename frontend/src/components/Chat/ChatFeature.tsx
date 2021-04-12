@@ -1,4 +1,4 @@
-import React, { Component, useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -9,27 +9,26 @@ import {
   Text,
   createStandaloneToast,
 } from '@chakra-ui/react';
-// npm i --save react-select
 import Select from 'react-select';
 import { nanoid } from 'nanoid';
-import ChatClient from 'twilio-chat';
 import assert from 'assert';
-import { Channel } from 'twilio-chat/lib/channel';
 import { Message } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
-import { ServerPlayer } from '../../classes/Player';
+import Player, { ServerPlayer } from '../../classes/Player';
 import Chat from '../../classes/Chat/Chat';
 
+/**
+ * Chat feature where participants can send group chats, one-to-one chats, 
+ * and whole group chats
+ */
 export default function ChatFeature(): JSX.Element {
-  const { apiClient } = useCoveyAppState();
+  const { apiClient, players, myPlayerID} = useCoveyAppState();
   const [typedMessage, setTypedMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [participants, setParticipants] = useState<ServerPlayer[]>();
-  // const [participants, setParticipants] = useState<string[]>();
+  // const [participants, setParticipants] = useState<ServerPlayer[]>();
+  const [participants, setParticipants] = useState<Player[]>();
   const [participantsToSendTo, setParticipantsToSendTo] = useState<string[]>([]);
-  const [chatClient, setChatClient] = useState<ChatClient>();
-  const [channel, setChannel] = useState<Channel>();
   const [userChatPrivilege, setUserChatPrivilege] = useState<boolean>(true);
   const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
   const [chat] = useState<Chat>(Chat.instance());
@@ -38,13 +37,31 @@ export default function ChatFeature(): JSX.Element {
  
 
   useEffect(() => {
-    // console.log('messageHandler', participantsToSendTo);
+    let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
+    if (!chatPrivilege) {
+      chatPrivilege = true;
+    }
+    setUserChatPrivilege(chatPrivilege);
+  }, [players]);
+
+  useEffect(() => {
+
+    /**
+     * This function adds the new message to the current list of sent messages.
+     * 
+     * @param message Message to be sent out to recipients 
+     */
     const handleMessageAdded = (message: Message) => {
-      // handles both the sent and received messages
       setMessages(arr => [...arr, message]);
     };
-  
-    const newMessageAlert = async (message: Message) => {
+
+    /**
+     * This function creates a new message alert that is sent to users to 
+     * inform them of a new message.
+     * 
+     * @param message Message to be sent out to recipients
+     */
+    async function newMessageAlert(message: Message) {
       const toast = createStandaloneToast();
       const listeners = await message.channel.getMembers();
       const listenerIDs = listeners.map(l => l.identity);
@@ -72,16 +89,19 @@ export default function ChatFeature(): JSX.Element {
     chat.handleChatMessageAdded = newMessageAlert;
   }, [chat, participantsToSendTo, playerUserName]);
 
+  /**
+   * This function updates the list of participants who are currently in the town.
+   * THe list of participants is displayed to users to pick from to send messages.
+   */
   const updateParticipantsListing = useCallback(() => {
-    // console.log(apiClient);
     const videoInstance = Video.instance();
     const currentCoveyTownID = videoInstance?.coveyTownID;
     assert(currentCoveyTownID);
     setCoveyTownID(currentCoveyTownID);
 
-    apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
-      setParticipants(players.participants);
-    });
+    // apiClient.getParticipants({ coveyTownID: currentCoveyTownID }).then(players => {
+    setParticipants(players);
+    // });
   }, [setParticipants, apiClient]);
 
   useEffect(() => {
@@ -92,13 +112,23 @@ export default function ChatFeature(): JSX.Element {
     };
   }, [updateParticipantsListing]);
 
-  // Need to send messages to only the participants checked in the checkbox
+  /**
+   * This function uses the API to send the chat message.
+   * 
+   * @param messageToSend Message to be sent out to recipients 
+   */
   function sendMessage(messageToSend: string) {
     setTypedMessage('');
     const chatParticipants = participantsToSendTo.slice(0);
     chat?.sendChatMessage(chatParticipants, `${playerUserName}: ${messageToSend}`);
   }
 
+  /**
+   * This function always users to send messages using the "Enter" button on 
+   * the keyboard. 
+   * 
+   * @param event User event from keyboard
+   */
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (event.key === 'Enter') {
       event.preventDefault();
@@ -107,15 +137,21 @@ export default function ChatFeature(): JSX.Element {
     }
   }
 
-  // Multi-Select Options
+  /**
+   * Converts the current participants into a multi-select list for the chat.
+   */
   const options = [{ value: `${coveyTownID}`, label: 'Everyone' }];
-
   participants?.forEach(participant => {
-    if (participant._userName !== playerUserName) {
-      options.push({ value: participant._id, label: participant._userName });
+    if (participant.userName !== playerUserName) {
+      options.push({ value: participant.id, label: participant.userName });
     }
   });
 
+  /**
+   * This function initiates a chat from the selected list of participants.
+   * 
+   * @param listOfParticipants participants to receive the current message
+   */
   function handleChange(listOfParticipants: any[]) {
     console.log(listOfParticipants);
     setParticipantsToSendTo(() => listOfParticipants);

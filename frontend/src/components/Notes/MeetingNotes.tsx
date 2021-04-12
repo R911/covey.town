@@ -1,32 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Flex, Heading, Input, Text } from '@chakra-ui/react';
 import { nanoid } from 'nanoid';
-import ChatClient from 'twilio-chat';
 import assert from 'assert';
-import { Channel } from 'twilio-chat/lib/channel';
 import { Message } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import Chat from '../../classes/Chat/Chat';
+import useCoveyAppState from '../../hooks/useCoveyAppState';
 
+/**
+ * Meeting notes feature where participants can add notes that can be accessed by
+ * all users in the town.
+ */
 export default function MeetingNotes(): JSX.Element {
+  const {players, myPlayerID} = useCoveyAppState();
   const [typedNote, setTypedNote] = useState<string>('');
   const [meetingNotes, setMeetingNotes] = useState<Message[]>([]);
-  const [chatClient, setChatClient] = useState<ChatClient>();
-  const [channel, setChannel] = useState<Channel>();
   const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
   const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
   const [chat] = useState<Chat>(Chat.instance());
 
+  useEffect(() => {
+    let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
+    if (!chatPrivilege) {
+      chatPrivilege = true;
+    }
+    setUserMeetingPrivilege(chatPrivilege);
+  }, [players]);
+
+
+  /**
+   * This function uses the API to send the meeting note.
+   * 
+   * @param noteToSend Notes to be sent out to town
+   */
   function sendNote(noteToSend: string) {
     setTypedNote('');
     chat.sendMeetingNote(`${playerUserName}: ${noteToSend}`);
   }
 
   useEffect(() => {
-
+    assert(chat);
+     /**
+     * This function adds the new meeting note to the current list of notes.
+     * 
+     * @param message Meeting note to be sent out to recipients 
+     */
     const onNoteAdded = (message: Message): void => {
-      setMeetingNotes(arr => [...arr, message]);
-      // console.log(message.author);
+      setMeetingNotes(arr => [...arr, message]); 
     };
 
     const initMeetingNotesChannel = async () => {
@@ -38,6 +58,12 @@ export default function MeetingNotes(): JSX.Element {
     initMeetingNotesChannel();
   }, [chat]);
 
+  /**
+   * This function always users to send meeting note using the "Enter" button on 
+   * the keyboard. 
+   * 
+   * @param event User event from keyboard
+   */
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (event.key === 'Enter') {
       event.preventDefault();

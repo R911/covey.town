@@ -77,7 +77,7 @@ class CoveyGameScene extends Phaser.Scene {
   updatePlayerLocation(player: Player) {
     let myPlayer = this.players.find((p) => p.id === player.id);
     if (!myPlayer) {
-      let { location, privilages } = player;
+      let { location, privileges } = player;
       if (!location) {
         location = {
           rotation: 'back',
@@ -86,15 +86,15 @@ class CoveyGameScene extends Phaser.Scene {
           y: 0,
         };      
       }
-      if (!privilages) {
-        privilages = {
+      if (!privileges) {
+        privileges = {
           audio:true,
           video: true,
           chat: true,
           admin: false,
         };
       }
-      myPlayer = new Player(player.id, player.userName, location, privilages);
+      myPlayer = new Player(player.id, player.userName, location, privileges);
       this.players.push(myPlayer);
     }
     if (this.id !== myPlayer.id && this.physics && player.location) {

@@ -40,6 +40,8 @@ export interface TownJoinResponse {
   friendlyName: string;
   /** Is this a private town? * */
   isPubliclyListed: boolean;
+
+  capacity: number;
 }
 
 export interface TownParticipantsRequest {
@@ -98,6 +100,7 @@ export interface TownUpdateRequest {
   coveyTownPassword: string;
   friendlyName?: string;
   isPubliclyListed?: boolean;
+  capacity?: number;
 }
 
 export interface PlayerUpdateRequest {
@@ -176,6 +179,7 @@ export async function townJoinHandler(
       currentPlayers: coveyTownController.players,
       friendlyName: coveyTownController.friendlyName,
       isPubliclyListed: coveyTownController.isPubliclyListed,
+      capacity: coveyTownController.capacity,
     },
   };
 }
@@ -226,12 +230,7 @@ export async function townUpdateHandler(
   requestData: TownUpdateRequest,
 ): Promise<ResponseEnvelope<Record<string, null>>> {
   const townsStore = CoveyTownsStore.getInstance();
-  const success = townsStore.updateTown(
-    requestData.coveyTownID,
-    requestData.coveyTownPassword,
-    requestData.friendlyName,
-    requestData.isPubliclyListed,
-  );
+  const success = townsStore.updateTown(requestData.coveyTownID, requestData.coveyTownPassword, requestData.friendlyName, requestData.isPubliclyListed, requestData.capacity);
   return {
     isOK: success,
     response: {},
@@ -313,6 +312,13 @@ function townSocketAdapter(socket: Socket): CoveyTownListener {
       socket.emit('townClosing');
       socket.disconnect(true);
     },
+    onPlayerRemoved() {
+      socket.emit('playerKicked');
+      socket.disconnect(true);
+    },
+    onPlayerUpdated(updatedPlayer: Player) {
+      socket.emit('playerUpdated', updatedPlayer);
+    },
   };
 }
 
@@ -339,13 +345,13 @@ export function townSubscriptionHandler(socket: Socket): void {
   // Create an adapter that will translate events from the CoveyTownController into
   // events that the socket protocol knows about
   const listener = townSocketAdapter(socket);
-  townController.addTownListener(listener);
+  townController.addTownListener(listener, s.player.id);
 
   // Register an event listener for the client socket: if the client disconnects,
   // clean up our listener adapter, and then let the CoveyTownController know that the
   // player's session is disconnected
   socket.on('disconnect', () => {
-    townController.removeTownListener(listener);
+    townController.removeTownListener(listener, s.player.id);
     townController.destroySession(s);
   });
 

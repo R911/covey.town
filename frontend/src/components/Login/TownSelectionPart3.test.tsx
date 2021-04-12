@@ -88,6 +88,7 @@ function wrappedTownSelection() {
     currentTownID: '',
     currentTownIsPubliclyListed: false,
     currentTownFriendlyName: '',
+    currentTownCapacity: 50,
     sessionToken: '',
     userName: '',
     socket: null,
@@ -204,7 +205,8 @@ describe('Town Selection - depends on Part 1 passing', () => {
           await waitFor(() => expect(mockCreateTown)
             .toBeCalledWith({
               friendlyName: townName,
-              isPubliclyListed: true
+              isPubliclyListed: true,
+              capacity:50
             }));
         });
 
@@ -222,7 +224,8 @@ describe('Town Selection - depends on Part 1 passing', () => {
           await waitFor(() => expect(mockCreateTown)
             .toBeCalledWith({
               friendlyName: townName,
-              isPubliclyListed: false
+              isPubliclyListed: false,
+              capacity:50
             }));
 
         });
@@ -241,7 +244,8 @@ describe('Town Selection - depends on Part 1 passing', () => {
           await waitFor(() => expect(mockCreateTown)
             .toBeCalledWith({
               friendlyName: townName,
-              isPubliclyListed: false
+              isPubliclyListed: false,
+              capacity:50
             }));
           await waitFor(() => expect(mockToast)
             .toBeCalledWith(expect.objectContaining({
@@ -293,7 +297,8 @@ describe('Town Selection - depends on Part 1 passing', () => {
           await waitFor(() => expect(mockCreateTown)
             .toBeCalledWith({
               friendlyName: townName,
-              isPubliclyListed: true
+              isPubliclyListed: true,
+              capacity:50
             }));
           await waitFor(() => expect(mockToast)
             .toBeCalledWith({
