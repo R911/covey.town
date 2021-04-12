@@ -8,6 +8,8 @@ import { ServerPlayer } from './Player';
 export interface TownJoinRequest {
   /** userName of the player that would like to join * */
   userName: string;
+
+  userId: string;
   /** ID of the town that the player would like to join * */
   coveyTownID: string;
 }
@@ -97,7 +99,6 @@ export interface PlayerUpdateRequest {
   coveyTownID: string;
   coveyTownPassword: string;
   userId: string;
-  userPassword: string;
   playerId: string;
   videoAccess?: boolean;
   audioAccess?: boolean;
@@ -109,7 +110,6 @@ export interface BanPlayerRequest {
   coveyTownID: string;
   coveyTownPassword: string;
   userId: string;
-  userPassword: string;
   playerId: string;
 }
 
@@ -117,7 +117,6 @@ export interface EmptyTownRequest {
   coveyTownID: string;
   coveyTownPassword: string;
   userId: string;
-  userPassword: string;
 }
 
 /**
@@ -135,7 +134,7 @@ export interface TownAuthorizationResponse {
     status: integer,
     error: string,
     sessionToken: string,
-    userName: string,
+    user_name: string,
 }
 
 /**

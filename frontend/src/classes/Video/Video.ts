@@ -18,6 +18,8 @@ export default class Video {
 
   private _userName: string;
 
+  private _userId: string;
+
   private townsServiceClient: TownsServiceClient = new TownsServiceClient();
 
   private _coveyTownID: string;
@@ -32,9 +34,10 @@ export default class Video {
 
   unPauseGame: () => void = ()=>{};
 
-  constructor(userName: string, coveyTownID: string) {
+  constructor(userName: string, userId: string,coveyTownID: string) {
     this._userName = userName;
     this._coveyTownID = coveyTownID;
+    this._userId = userId;
   }
 
   get isPubliclyListed(): boolean {
@@ -71,6 +74,7 @@ export default class Video {
         this.townsServiceClient.joinTown({
           coveyTownID: this._coveyTownID,
           userName: this._userName,
+          userId: this._userId
         })
           .then((result) => {
             this.sessionToken = result.coveySessionToken;
@@ -112,11 +116,11 @@ export default class Video {
     return this.teardownPromise ?? Promise.resolve();
   }
 
-  public static async setup(username: string, coveyTownID: string): Promise<TownJoinResponse> {
+  public static async setup(username: string, userId: string,coveyTownID: string): Promise<TownJoinResponse> {
     let result = null;
 
     if (!Video.video) {
-      Video.video = new Video(username, coveyTownID);
+      Video.video = new Video(username, userId, coveyTownID);
     }
 
     try {

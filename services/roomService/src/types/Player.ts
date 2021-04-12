@@ -16,7 +16,7 @@ export default class Player {
 
   public privileges: UserPrivileges;
 
-  constructor(userName: string) {
+  constructor(userName: string, id?: string) {
     this.location = {
       x: 0,
       y: 0,
@@ -30,7 +30,11 @@ export default class Player {
       admin: false,
     };
     this._userName = userName;
-    this._id = nanoid();
+    if (id === undefined) {
+      this._id = nanoid();
+    } else {
+      this._id = id;
+    }
   }
 
   get userName(): string {
@@ -48,5 +52,4 @@ export default class Player {
   updatePrivilages(privileges: UserPrivileges): void {
     this.privileges = privileges;
   }
-  
 }
