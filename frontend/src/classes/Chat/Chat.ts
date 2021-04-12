@@ -109,9 +109,6 @@ export default class Chat {
   }
 
   public sendChatMessage(userNames: string[], message: string): void {
-    console.log(userNames);
-    assert(this._username);
-    userNames.push(this._username);
     userNames.sort();
     const joinedIDs = userNames.join('-');
     const chatChannelUniqueName = md5(joinedIDs);
@@ -133,9 +130,6 @@ export default class Chat {
       chatChannelUniqueName = this._meetingNotesChannelID;
       chatChannelFriendlyName = 'meeting-notes';
     } else {
-      assert(this._username);
-      userNames.push(this._username);
-      console.log('Initchat2', userNames);
       userNames.sort();
       const joinedIDs = userNames.join('-');
       chatChannelFriendlyName = joinedIDs;
@@ -156,9 +150,12 @@ export default class Chat {
       }
 
       assert(chatChannel);
+      console.log(`chatChannel ${chatChannel.uniqueName}`);
+
       const joinedChannel = await this.joinChannel(chatChannel, isMeetingNotes);
       userNames.forEach(id => {
         joinedChannel.invite(id);
+        console.log(`Invited ${id}`);
       });
       const messageHistory = await joinedChannel.getMessages();
       messageItems = messageHistory.items;
