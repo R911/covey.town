@@ -233,7 +233,11 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
               if (dataPassword.length) {
                 const token = crypto.randomBytes(16).toString('base64');
                 req.session.sessionToken = token;
-                resp = { ...dataPassword[0], sessionToken: token };
+                resp = { 
+                  userID: dataPassword[0].user_id, 
+                  userName: dataPassword[0].user_name,
+                  sessionToken: token,
+                };
               } else {
                 resp = {
                   status: 404,
@@ -283,6 +287,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
               resp = {
                 sessionToken: token,
                 userName,
+                userID,
               };
             })
             .catch(() => {});
