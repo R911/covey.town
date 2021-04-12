@@ -26,6 +26,7 @@ export type CoveyAppState = {
   currentTownCapacity:number,
   myPlayerID: string,
   players: Player[],
+  askedToBecomeAdmin: Player[],
   currentLocation: UserLocation,
   nearbyPlayers: NearbyPlayers,
   emitMovement: (location: UserLocation) => void,

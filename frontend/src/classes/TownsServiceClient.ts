@@ -137,6 +137,11 @@ export interface TownAuthorizationResponse {
     user_name: string,
 }
 
+export interface AskToBecomeAdminRequest {
+  coveyTownID: string;
+  userId: string;
+}
+
 /**
  * Envelope that wraps any response from the server
  */
@@ -230,6 +235,13 @@ export default class TownsServiceClient {
 
   async emptyTown(requestData: EmptyTownRequest): Promise<void> {
     const responseWrapper = await this._axios.patch<ResponseEnvelope<void>>(`/towns/destroyAllSessions/${requestData.coveyTownID}`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async askToBecomeAdmin(requestData: AskToBecomeAdminRequest): Promise<void> {
+    const responseWrapper = await this._axios.get<ResponseEnvelope<void>>(
+      `/towns/${requestData.coveyTownID}/makeAdmin/${requestData.userId}`,
+    );
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 

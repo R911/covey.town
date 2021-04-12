@@ -3,17 +3,14 @@ import React, { useCallback, useState, useEffect } from 'react';
 import {
   Button,
   Table,
-  TableCaption,
   Thead,
   Tbody,
   Tr,
   Th,
   Td,
-  Collapse,
   FormControl,
   FormLabel,
   Input,
-  Checkbox,
   Box,
   Modal,
   ModalBody,
@@ -36,9 +33,10 @@ import {PlayerUpdateRequest} from '../../../../../../classes/TownsServiceClient'
 const AdminControl: React.FunctionComponent = () => {
   const {isOpen, onOpen, onClose} = useDisclosure()
   const video = useMaybeVideo()
-  const {currentTownID, currentTownFriendlyName, myPlayerID, players, apiClient} = useCoveyAppState();
+  const {currentTownID, currentTownFriendlyName, myPlayerID, players, apiClient, askedToBecomeAdmin} = useCoveyAppState();
   const [townPassword, setTownPassword] = useState<string>('');
   const [privilegeMap, setPrivilegeMap] = useState(new Map<string, Player| undefined>());
+  const [adminRequestMap, setAdminRequestMap] = useState(new Map<string, Player| undefined>());
 
   const toast = useToast();
 
@@ -122,6 +120,24 @@ const AdminControl: React.FunctionComponent = () => {
       setPrivilegeMap(privilegeMap.set(player.id, player));
     });
   },[players]);
+
+  useEffect(() => {
+    const me = players.find(player=>player.id===myPlayerID);
+    if( me?.privileges?.admin){
+      askedToBecomeAdmin?.map((player) => {
+        if(!adminRequestMap.has(player.id)){
+          setAdminRequestMap(adminRequestMap.set(player.id, player));
+          toast({
+            title: 'Request to make Admin',
+            description: `${player.userName} asked to be promoted to Admin.`,
+            status: 'info',
+            duration: 10000
+          })
+        }
+      });
+    }
+    
+  },[askedToBecomeAdmin]);
 
   return <>
     <form>

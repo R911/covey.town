@@ -43,6 +43,7 @@ type CoveyAppUpdate =
   | { action: 'disconnect' }
   | { action: 'doLogin'; data: { userName: string, authToken: string } }
   | { action: 'playerUpdated'; player: Player }
+  | { action: 'playerAskedToBecomeAdmin'; player: Player }
   ;
 
 function defaultAppState(): CoveyAppState {
@@ -50,6 +51,7 @@ function defaultAppState(): CoveyAppState {
     nearbyPlayers: { nearbyPlayers: [] },
     chatToken: '',
     players: [],
+    askedToBecomeAdmin:[],
     myPlayerID: '',
     currentTownFriendlyName: '',
     currentTownID: '',
@@ -80,6 +82,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
     currentTownCapacity: state.currentTownCapacity,
     myPlayerID: state.myPlayerID,
     players: state.players,
+    askedToBecomeAdmin: state.askedToBecomeAdmin,
     currentLocation: state.currentLocation,
     nearbyPlayers: state.nearbyPlayers,
     userName: state.userName,
@@ -148,6 +151,9 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       } else {
         nextState.players = nextState.players.concat([update.player]);
       }
+      break;
+    case 'playerAskedToBecomeAdmin':
+      nextState.askedToBecomeAdmin = nextState.askedToBecomeAdmin.concat([update.player]);
       break;
     case 'weMoved':
       nextState.currentLocation = update.location;
@@ -227,6 +233,9 @@ async function GameController(
   };
   socket.on('playerUpdated', (player: ServerPlayer) => {
     dispatchAppUpdate({ action: 'playerUpdated', player: Player.fromServerPlayer(player) });
+  });
+  socket.on('playerAskedToBecomeAdmin', (player:ServerPlayer) =>{
+    dispatchAppUpdate({ action: 'playerAskedToBecomeAdmin', player:Player.fromServerPlayer(player)});
   });
 
   dispatchAppUpdate({

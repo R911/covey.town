@@ -3,10 +3,10 @@ import { UserLocation, UserPrivileges } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import Player from '../types/Player';
 import PlayerSession from '../types/PlayerSession';
-import TwilioVideo from './TwilioVideo';
-import IVideoClient from './IVideoClient';
 import IChatClient from './IChatClient';
+import IVideoClient from './IVideoClient';
 import TwilioChat from './TwilioChat';
+import TwilioVideo from './TwilioVideo';
 
 const friendlyNanoID = customAlphabet('1234567890ABCDEF', 8);
 
@@ -72,7 +72,7 @@ export default class CoveyTownController {
   /** The list of CoveyTownListeners that are subscribed to events in this town * */
   private _listeners: CoveyTownListener[] = [];
 
-  private _listenerMap: Map<string, CoveyTownListener> = new Map<string, CoveyTownListener>(); 
+  private _listenerMap: Map<string, CoveyTownListener> = new Map<string, CoveyTownListener>();
 
   private readonly _coveyTownID: string;
 
@@ -85,7 +85,7 @@ export default class CoveyTownController {
   private _capacity: number;
 
   constructor(friendlyName: string, isPubliclyListed: boolean, capacity?: number) {
-    this._coveyTownID = (process.env.DEMO_TOWN_ID === friendlyName ? friendlyName : friendlyNanoID());
+    this._coveyTownID = process.env.DEMO_TOWN_ID === friendlyName ? friendlyName : friendlyNanoID();
     if (capacity === undefined) this._capacity = 50;
     else this._capacity = capacity;
     this._townUpdatePassword = nanoid(24);
@@ -100,8 +100,7 @@ export default class CoveyTownController {
    * @param newPlayer The new player to add to the town
    */
   async addPlayer(newPlayer: Player): Promise<PlayerSession | undefined> {
-
-    if (this._bannedPlayers.find(p => p.id === newPlayer.id)){
+    if (this._bannedPlayers.find(p => p.id === newPlayer.id)) {
       return undefined;
     }
 
@@ -111,13 +110,16 @@ export default class CoveyTownController {
     this._players.push(newPlayer);
 
     // Create a video token for this user to join this town
-    theSession.videoToken = await this._videoClient.getTokenForTown(this._coveyTownID, newPlayer.id);
+    theSession.videoToken = await this._videoClient.getTokenForTown(
+      this._coveyTownID,
+      newPlayer.id,
+    );
 
     // Create a chat token for this user to join this town
     theSession.chatToken = await this._chatClient.getChatToken(newPlayer.id);
 
     // Notify other players that this player has joined
-    this._listeners.forEach((listener) => listener.onPlayerJoined(newPlayer));
+    this._listeners.forEach(listener => listener.onPlayerJoined(newPlayer));
 
     return theSession;
   }
@@ -128,9 +130,9 @@ export default class CoveyTownController {
    * @param session PlayerSession to destroy
    */
   destroySession(session: PlayerSession): void {
-    this._players = this._players.filter((p) => p.id !== session.player.id);
-    this._sessions = this._sessions.filter((s) => s.sessionToken !== session.sessionToken);
-    this._listeners.forEach((listener) => listener.onPlayerDisconnected(session.player));
+    this._players = this._players.filter(p => p.id !== session.player.id);
+    this._sessions = this._sessions.filter(s => s.sessionToken !== session.sessionToken);
+    this._listeners.forEach(listener => listener.onPlayerDisconnected(session.player));
   }
 
   /**
@@ -140,7 +142,7 @@ export default class CoveyTownController {
    */
   updatePlayerLocation(player: Player, location: UserLocation): void {
     player.updateLocation(location);
-    this._listeners.forEach((listener) => listener.onPlayerMoved(player));
+    this._listeners.forEach(listener => listener.onPlayerMoved(player));
   }
 
   /**
@@ -149,7 +151,7 @@ export default class CoveyTownController {
    *
    * @param listener New listener
    */
-  addTownListener(listener: CoveyTownListener, user:string): void {
+  addTownListener(listener: CoveyTownListener, user: string): void {
     this._listeners.push(listener);
     this._listenerMap.set(user, listener);
   }
@@ -160,8 +162,8 @@ export default class CoveyTownController {
    * @param listener The listener to unsubscribe, must be a listener that was registered
    * with addTownListener, or otherwise will be a no-op
    */
-  removeTownListener(listener: CoveyTownListener|undefined, user:string): void {
-    this._listeners = this._listeners.filter((v) => v !== listener);
+  removeTownListener(listener: CoveyTownListener | undefined, user: string): void {
+    this._listeners = this._listeners.filter(v => v !== listener);
     this._listenerMap.delete(user);
   }
 
@@ -172,30 +174,34 @@ export default class CoveyTownController {
    * @param token
    */
   getSessionByToken(token: string): PlayerSession | undefined {
-    return this._sessions.find((p) => p.sessionToken === token);
+    return this._sessions.find(p => p.sessionToken === token);
   }
 
   disconnectAllPlayers(): void {
-    this._listeners.forEach((listener) => listener.onTownDestroyed());
+    this._listeners.forEach(listener => listener.onTownDestroyed());
   }
 
-  getPlayer(userId: string): Player| undefined {
+  getPlayer(userId: string): Player | undefined {
     return this.players.find(p => p.id === userId);
   }
 
   getSessionByPlayerId(playerId: string): PlayerSession | undefined {
-    return this._sessions.find((p) => p.player.id === playerId);
+    return this._sessions.find(p => p.player.id === playerId);
   }
 
-  banPlayer(session: PlayerSession): void{
+  banPlayer(session: PlayerSession): void {
     this._listenerMap.get(session.player.id)?.onPlayerRemoved();
     this._bannedPlayers.push(session.player);
     this.removeTownListener(this._listenerMap.get(session.player.id), session.player.id);
     this.destroySession(session);
   }
-  
-  updatePlayerPrivileges(player:Player, privilege:UserPrivileges): void {
+
+  updatePlayerPrivileges(player: Player, privilege: UserPrivileges): void {
     player.updatePrivilages(privilege);
-    this._listeners.forEach((listener) => listener.onPlayerUpdated(player));
+    this._listeners.forEach(listener => listener.onPlayerUpdated(player));
+  }
+
+  askToBecomeAdmin(player: Player): void {
+    this._listeners.forEach(listener => listener.onPlayerAskToBecomeAdmin(player));
   }
 }

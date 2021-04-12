@@ -16,6 +16,7 @@ import TownSettings from '../../../../Login/TownSettings';
 import MenuContainer from '@material-ui/core/Menu';
 import AdminControl from './Admin/AdminControl';
 import useCoveyAppState from '../../../../../hooks/useCoveyAppState';
+import AttendeeControl from './Attendee/AttendeeControl';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   container: {
@@ -106,6 +107,7 @@ export default function MenuBar(props: { setMediaError?(error: Error): void}) {
               <Grid container justify="flex-end">
                 <TownSettings />
                 {isAdmin && <AdminControl />}
+                {!isAdmin && <AttendeeControl />}
                 <Menu />
                 <EndCallButton />
               </Grid>
