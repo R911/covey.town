@@ -6,7 +6,7 @@ import { Message } from 'twilio-chat/lib/message';
 import DebugLogger from '../DebugLogger';
 
 export default class Chat {
-  private static chat: Chat | null = null;
+  private static chat: Chat;
 
   private logger: DebugLogger = new DebugLogger('Chat');
 
@@ -48,6 +48,7 @@ export default class Chat {
 
   public set handleChatMessageAdded(callback: (message: Message) => void) {
     this._handleChatMessageAdded = callback;
+    console.log('Callback set');
   }
 
   private async setup(): Promise<ChatClient> {
@@ -56,6 +57,7 @@ export default class Chat {
     assert(client);
     this._chatClient = client;
     this._chatClient.on('channelInvited', (channel: Channel) => {
+      console.log('Invited to channel', channel.uniqueName);
       this.joinChannel(channel, false);
     });
     return client;
@@ -74,30 +76,27 @@ export default class Chat {
 
     try {
       const chatClient = await Chat.chat.setup();
-      if (!chatClient) {
-        Chat.chat = null;
-        return;
-      }
     } catch (err) {
-      Chat.chat = null;
+      console.error(err);
       throw err;
     }
   }
 
-  public static instance(): Chat | null {
+  public static instance(): Chat {
     return Chat.chat;
   }
 
   private async joinChannel(newChannel: Channel, isMeetingNotes: boolean): Promise<Channel> {
     if (newChannel.status !== 'joined') {
       await newChannel.join();
-      if (isMeetingNotes) {
-        newChannel.on('messageAdded', this._handleMeetingNoteAdded);
-      } else {
-        newChannel.on('messageAdded', this._handleChatMessageAdded);
-      }
-      this._channelMap.set(newChannel.uniqueName, newChannel);
+      console.log('Joined channel', newChannel.uniqueName);
     }
+    if (isMeetingNotes) {
+      newChannel.on('messageAdded', this._handleMeetingNoteAdded);
+    } else {
+      newChannel.on('messageAdded', this._handleChatMessageAdded);
+    }
+    this._channelMap.set(newChannel.uniqueName, newChannel);
     return newChannel;
   }
 
@@ -109,11 +108,11 @@ export default class Chat {
     meetingNotesChannel.sendMessage(message);
   }
 
-  public sendChatMessage(userIDs: string[], message: string): void {
-    userIDs.sort();
-    const joinedIDs = userIDs.join('-');
+  public sendChatMessage(userNames: string[], message: string): void {
+    userNames.sort();
+    const joinedIDs = userNames.join('-');
     const chatChannelUniqueName = md5(joinedIDs);
-
+    console.log(chatChannelUniqueName);
     const chatChannel = this._channelMap.get(chatChannelUniqueName);
     if (!chatChannel) {
       throw Error('Channel channel does not exist');
@@ -121,7 +120,8 @@ export default class Chat {
     chatChannel.sendMessage(message);
   }
 
-  public async initChat(userIDs: string[], isMeetingNotes: boolean): Promise<Message[]> {
+  public async initChat(userNames: string[], isMeetingNotes: boolean): Promise<Message[]> {
+    console.log('Initchat', userNames);
     let chatChannelUniqueName = '';
     let chatChannelFriendlyName = '';
     let messageItems = [];
@@ -130,10 +130,8 @@ export default class Chat {
       chatChannelUniqueName = this._meetingNotesChannelID;
       chatChannelFriendlyName = 'meeting-notes';
     } else {
-      assert(this._userID);
-      userIDs.push(this._userID);
-      userIDs.sort();
-      const joinedIDs = userIDs.join('-');
+      userNames.sort();
+      const joinedIDs = userNames.join('-');
       chatChannelFriendlyName = joinedIDs;
       chatChannelUniqueName = md5(joinedIDs);
     }
@@ -152,9 +150,12 @@ export default class Chat {
       }
 
       assert(chatChannel);
+      console.log(`chatChannel ${chatChannel.uniqueName}`);
+
       const joinedChannel = await this.joinChannel(chatChannel, isMeetingNotes);
-      userIDs.forEach(id => {
+      userNames.forEach(id => {
         joinedChannel.invite(id);
+        console.log(`Invited ${id}`);
       });
       const messageHistory = await joinedChannel.getMessages();
       messageItems = messageHistory.items;
