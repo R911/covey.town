@@ -183,6 +183,7 @@ export default class CoveyTownsStore {
         return false;
       }
       existingTown.askToBecomeAdmin(user);
+      return true;
     }
 
     return false;

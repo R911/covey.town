@@ -28,7 +28,7 @@ const AttendeeControl: React.FunctionComponent = () => {
 
   return <>
     <MenuItem data-testid='openMenuButton' onClick={askToBecomeAdmin}>
-      <Typography variant="body1">Admin Controls</Typography>
+      <Typography variant="body1">Request to be Admin</Typography>
     </MenuItem>
   </>
 }
