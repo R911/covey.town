@@ -9,6 +9,7 @@ import Knex from 'knex';
 import io from 'socket.io';
 import { nanoid } from 'nanoid';
 import {
+  askToBecomeAdminHandler,
   banPlayerHandler,
   emptyRoomHandler,
   playerUpdateHandler,
@@ -290,6 +291,24 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
         return res.json(result);
       })
       .catch(() => {});
+  });
+
+  /**
+   * Ask to become Admin
+   */
+  app.get('/towns/:coveyTownID/makeAdmin/:userId', BodyParser.json(), async (req, res) => {
+    try {
+      const result = await askToBecomeAdminHandler({
+        coveyTownID: req.params.coveyTownID,
+        userId: req.params.userId,
+      });
+      res.status(StatusCodes.OK).json(result);
+    } catch (err) {
+      logError(err);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error, please see log in server for more details',
+      });
+    }
   });
 
   /**
