@@ -6,8 +6,8 @@ import session from 'express-session';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import Knex from 'knex';
-import io from 'socket.io';
 import { nanoid } from 'nanoid';
+import io from 'socket.io';
 import {
   askToBecomeAdminHandler,
   banPlayerHandler,
@@ -52,6 +52,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
       const result = await townJoinHandler({
         userName: req.body.userName,
         coveyTownID: req.body.coveyTownID,
+        userId: req.body.userId,
       });
       res.status(StatusCodes.OK).json(result);
     } catch (err) {
@@ -233,8 +234,8 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
               if (dataPassword.length) {
                 const token = crypto.randomBytes(16).toString('base64');
                 req.session.sessionToken = token;
-                resp = { 
-                  userID: dataPassword[0].user_id, 
+                resp = {
+                  userID: dataPassword[0].user_id,
                   userName: dataPassword[0].user_name,
                   sessionToken: token,
                 };

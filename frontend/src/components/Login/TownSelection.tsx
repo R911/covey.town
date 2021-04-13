@@ -31,17 +31,16 @@ import Chat from '../../classes/Chat/Chat';
 
 interface TownSelectionProps {
   doLogin: (initData: TownJoinResponse) => Promise<boolean>,
-  userID: string,
 }
 
-export default function TownSelection({ doLogin, userID }: TownSelectionProps): JSX.Element {
+export default function TownSelection({ doLogin}: TownSelectionProps): JSX.Element {
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
   const [currentPublicTowns, setCurrentPublicTowns] = useState<CoveyTownInfo[]>();
   const [townSize, setTownSize] = useState(50);
   const { connect } = useVideoContext();
-  const { apiClient, myPlayerID, currentTownID, userName } = useCoveyAppState();
+  const { apiClient, userID, userName } = useCoveyAppState();
   const toast = useToast();
 
   const updateTownListings = useCallback(() => {
@@ -81,7 +80,7 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
           });
           return;
         }
-        const initData = await Video.setup(userName, myPlayerID, coveyRoomID);
+        const initData = await Video.setup(userName, userID, coveyRoomID);
         await Chat.setup(initData.coveyUserID, userName, coveyRoomID  , initData.providerChatToken);
         const loggedIn = await doLogin(initData);
         if (loggedIn) {
@@ -96,12 +95,12 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
         });
       }
     },
-    [userName, doLogin, toast, connect, myPlayerID],
+    [userName, doLogin, toast, connect, userID],
   );
 
   const makeAdmin = async(coveyTownID:string, coveyTownPassword:string) => {
     try {
-      await apiClient.modifyPlayer({coveyTownID, coveyTownPassword,userId:myPlayerID, playerId:myPlayerID, isAdmin:true});
+      await apiClient.modifyPlayer({coveyTownID, coveyTownPassword,userId:userID, playerId:userID, isAdmin:true});
     } catch (err) {
       toast({
         title: 'Unable to modify player',
@@ -158,8 +157,9 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
         isClosable: true,
         duration: null,
       });
-      await makeAdmin(newTownInfo.coveyTownID, newTownInfo.coveyTownPassword);
       await handleJoin(newTownInfo.coveyTownID);
+      // await delay(2000);
+      await makeAdmin(newTownInfo.coveyTownID, newTownInfo.coveyTownPassword);
     } catch (err) {
       toast({
         title: 'Unable to connect to Towns Service',

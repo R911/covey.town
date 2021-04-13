@@ -108,7 +108,7 @@ export default class CoveyTownsStore {
     const existingTown = this.getControllerForTown(coveyTownID);
     if (existingTown && passwordMatches(coveyTownPassword, existingTown.townUpdatePassword)) {
       const user = existingTown.getPlayer(userId);
-      if (!user?.privileges.admin) {
+      if (!user?.privileges.admin && userId !== playerId) {
         return false;
       }
       const modifiedPlayer = existingTown.getPlayer(playerId);
