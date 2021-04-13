@@ -183,7 +183,7 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
             <FormLabel>User Password</FormLabel>
             <Input
               required
-              id="outlined-required"
+              id="outlined-required-password"
               label="Password"
               type="password"
               placeholder="Enter your password"
@@ -200,7 +200,7 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
               <FormLabel>Confirm Password</FormLabel>
               <Input
                 required
-                id="outlined-required"
+                id="outlined-required-confirm-password"
                 label="Confirm Password"
                 type="password"
                 placeholder="Enter your password again"

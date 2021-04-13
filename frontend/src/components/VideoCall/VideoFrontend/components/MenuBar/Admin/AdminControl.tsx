@@ -129,9 +129,11 @@ const AdminControl: React.FunctionComponent = () => {
           setAdminRequestMap(adminRequestMap.set(player.id, player));
           toast({
             title: 'Admin Request',
-            description: `${player.userName} asked to be become an Admin.`,
+            description: `${player.userName} asked to become an Admin.`,
             status: 'info',
-            duration: 10000
+            duration: 10000,
+            isClosable: true,
+            position: 'bottom-left'
           })
         }
       });

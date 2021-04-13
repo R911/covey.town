@@ -98,18 +98,6 @@ export default function TownSelection({ doLogin}: TownSelectionProps): JSX.Eleme
     [userName, doLogin, toast, connect, userID],
   );
 
-  const makeAdmin = async(coveyTownID:string, coveyTownPassword:string) => {
-    try {
-      await apiClient.modifyPlayer({coveyTownID, coveyTownPassword,userId:userID, playerId:userID, isAdmin:true});
-    } catch (err) {
-      toast({
-        title: 'Unable to modify player',
-        description: err.toString(),
-        status: 'error'
-      })
-    }
-  };
-
   const handleCreate = async () => {
     if (!userName || userName.length === 0) {
       toast({
@@ -158,8 +146,6 @@ export default function TownSelection({ doLogin}: TownSelectionProps): JSX.Eleme
         duration: null,
       });
       await handleJoin(newTownInfo.coveyTownID);
-      // await delay(2000);
-      await makeAdmin(newTownInfo.coveyTownID, newTownInfo.coveyTownPassword);
     } catch (err) {
       toast({
         title: 'Unable to connect to Towns Service',
