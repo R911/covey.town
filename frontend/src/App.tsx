@@ -41,7 +41,7 @@ type CoveyAppUpdate =
   | { action: 'playerDisconnect'; player: Player }
   | { action: 'weMoved'; location: UserLocation }
   | { action: 'disconnect' }
-  | { action: 'doLogin'; data: { userName: string, authToken: string } }
+  | { action: 'doLogin'; data: { userName: string, authToken: string, userID: string } }
   | { action: 'playerUpdated'; player: Player }
   | { action: 'playerAskedToBecomeAdmin'; player: Player }
   ;
@@ -180,11 +180,30 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       break;
     case 'disconnect':
       state.socket?.disconnect();
-      return defaultAppState();
+      nextState.nearbyPlayers= { nearbyPlayers: [] };
+      nextState.chatToken= '';
+      nextState.players= [];
+      nextState.askedToBecomeAdmin=[];
+      nextState.myPlayerID= '';
+      nextState.currentTownFriendlyName= '';
+      nextState.currentTownID= '';
+      nextState.currentTownIsPubliclyListed= false;
+      nextState.currentTownCapacity= 50;
+      nextState.sessionToken= '';
+      nextState.socket= null;
+      nextState.currentLocation= {
+        x: 0,
+        y: 0,
+        rotation: 'front',
+        moving: false,
+      };
+      nextState.emitMovement= () => {};
+      nextState.apiClient= new TownsServiceClient();
       break;
     case 'doLogin':
       nextState.authToken = update.data.authToken;
       nextState.userName = update.data.userName;
+      nextState.userID = update.data.userID;
       break;
     default:
       throw new Error('Unexpected state request');
@@ -279,7 +298,7 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
 
   const page = useMemo(() => {
     if (!appState.authToken) {
-      return <Login setLogin={(data) => dispatchAppUpdate({ action: 'doLogin', data: { authToken: data.authToken, userName: data.userName } })} />; 
+      return <Login setLogin={(data) => dispatchAppUpdate({ action: 'doLogin', data: { authToken: data.authToken, userName: data.userName, userID: data.userID } })} />; 
     }
     if (!appState.sessionToken) {
       return <HomePage doLogin={setupGameController} userName={appState.userName} />
