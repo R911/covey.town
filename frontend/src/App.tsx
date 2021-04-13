@@ -180,7 +180,25 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       break;
     case 'disconnect':
       state.socket?.disconnect();
-      return defaultAppState();
+      nextState.nearbyPlayers= { nearbyPlayers: [] };
+      nextState.chatToken= '';
+      nextState.players= [];
+      nextState.askedToBecomeAdmin=[];
+      nextState.myPlayerID= '';
+      nextState.currentTownFriendlyName= '';
+      nextState.currentTownID= '';
+      nextState.currentTownIsPubliclyListed= false;
+      nextState.currentTownCapacity= 50;
+      nextState.sessionToken= '';
+      nextState.socket= null;
+      nextState.currentLocation= {
+        x: 0,
+        y: 0,
+        rotation: 'front',
+        moving: false,
+      };
+      nextState.emitMovement= () => {};
+      nextState.apiClient= new TownsServiceClient();
       break;
     case 'doLogin':
       nextState.authToken = update.data.authToken;
