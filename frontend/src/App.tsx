@@ -278,7 +278,7 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
       return <HomePage doLogin={setupGameController} userName={appState.userName} />
     }
     if (!videoInstance) {
-      return <div>Loading...</div>;
+     return <div>Loading...</div>;
     }
     return (
       <div>

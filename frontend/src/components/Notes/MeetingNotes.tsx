@@ -16,7 +16,7 @@ export default function MeetingNotes(): JSX.Element {
   const [typedNote, setTypedNote] = useState<string>('');
   const [meetingNotes, setMeetingNotes] = useState<Message[]>([]);
   const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
-  const [playerUserName, setUserName] = useState<string>(Video.instance()?.userName || '');
+  const [playerUserName] = useState<string>(Video.instance()?.userName || '');
   const [chat] = useState<Chat>(Chat.instance());
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function MeetingNotes(): JSX.Element {
       chatPrivilege = true;
     }
     setUserMeetingPrivilege(chatPrivilege);
-  }, [players]);
+  }, [players, myPlayerID]);
 
 
   /**

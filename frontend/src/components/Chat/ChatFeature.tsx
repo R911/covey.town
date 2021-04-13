@@ -15,7 +15,7 @@ import assert from 'assert';
 import { Message } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
-import Player, { ServerPlayer } from '../../classes/Player';
+import Player from '../../classes/Player';
 import Chat from '../../classes/Chat/Chat';
 
 /**
