@@ -42,7 +42,14 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
     },
   });
 
-  app.use(session({ secret: '1234567890QWERT', cookie: { secure: true } }));
+  app.use(
+    session({
+      secret: '1234567890QWERT',
+      cookie: { secure: true },
+      resave: true,
+      saveUninitialized: true,
+    }),
+  );
 
   /*
    * Create a new session (aka join a town)

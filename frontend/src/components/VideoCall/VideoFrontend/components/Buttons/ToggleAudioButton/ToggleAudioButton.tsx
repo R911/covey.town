@@ -17,8 +17,14 @@ export default function ToggleAudioButton(props: {
   const lastClickTimeRef = useRef(0);
   const hasAudioDevices = useHasAudioInputDevices();
   const {myPlayerID, players} = useCoveyAppState();
-  const player = players.find(player => player.id === myPlayerID);
-  const audioPrivilege = player?.privileges?.audio;
+  let audioPrivilege = true;
+  const player = players.find(player => player.id === myPlayerID);  
+  if(player!==undefined){
+    if(player.privileges!==undefined){
+      audioPrivilege = player?.privileges?.audio;
+    }    
+  }
+  
 
   const toggleAudio = useCallback(async () => {
     if (Date.now() - lastClickTimeRef.current > 200) {

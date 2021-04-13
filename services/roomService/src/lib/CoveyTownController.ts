@@ -102,11 +102,17 @@ export default class CoveyTownController {
    * @param newPlayer The new player to add to the town
    */
   async addPlayer(newPlayer: Player): Promise<PlayerSession | undefined> {
-    if (this._bannedPlayers.find(p => p.id === newPlayer.id)) {
+    if (
+      this._bannedPlayers.find(p => p.id === newPlayer.id) ||
+      this._players.find(p => p.id === newPlayer.id)
+    ) {
       return undefined;
     }
 
-    if (this._adminSet.has(newPlayer.id) || this._players.length === 0) {
+    if (
+      this._adminSet.has(newPlayer.id) ||
+      (this._players.length === 0 && this._adminSet.size === 0)
+    ) {
       const userPrivilege = newPlayer.privileges;
       userPrivilege.admin = true;
       newPlayer.updatePrivilages(userPrivilege);
