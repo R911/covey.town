@@ -74,6 +74,8 @@ export default class CoveyTownController {
 
   private _listenerMap: Map<string, CoveyTownListener> = new Map<string, CoveyTownListener>();
 
+  private _adminSet: Set<string> = new Set<string>();
+
   private readonly _coveyTownID: string;
 
   private _friendlyName: string;
@@ -102,6 +104,13 @@ export default class CoveyTownController {
   async addPlayer(newPlayer: Player): Promise<PlayerSession | undefined> {
     if (this._bannedPlayers.find(p => p.id === newPlayer.id)) {
       return undefined;
+    }
+
+    if (this._adminSet.has(newPlayer.id) || this._players.length === 0) {
+      const userPrivilege = newPlayer.privileges;
+      userPrivilege.admin = true;
+      newPlayer.updatePrivilages(userPrivilege);
+      this._adminSet.add(newPlayer.id);
     }
 
     const theSession = new PlayerSession(newPlayer);
@@ -203,5 +212,9 @@ export default class CoveyTownController {
 
   askToBecomeAdmin(player: Player): void {
     this._listeners.forEach(listener => listener.onPlayerAskToBecomeAdmin(player));
+  }
+
+  makeAdmin(playerId: string): void {
+    this._adminSet.add(playerId);
   }
 }

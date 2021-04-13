@@ -301,7 +301,7 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
       return <Login setLogin={(data) => dispatchAppUpdate({ action: 'doLogin', data: { authToken: data.authToken, userName: data.userName, userID: data.userID } })} />; 
     }
     if (!appState.sessionToken) {
-      return <HomePage doLogin={setupGameController} userName={appState.userName} />
+      return <HomePage doLogin={setupGameController} />
     }
     if (!videoInstance) {
       return <div>Loading...</div>;
