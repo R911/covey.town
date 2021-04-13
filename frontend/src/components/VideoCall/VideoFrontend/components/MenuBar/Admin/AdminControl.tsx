@@ -104,15 +104,15 @@ const AdminControl: React.FunctionComponent = () => {
   };
 
   const handleAllAudioBan = async () => {
-    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, audioAccess:false});});
+    players.filter(p=>!p.privileges?.admin).map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, audioAccess:false});});
   };
 
   const handleAllVideoBan = async () => {
-    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, videoAccess:false});});
+    players.filter(p=>!p.privileges?.admin).map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, videoAccess:false});});
   };
 
   const handleAllChatBan = async () => {
-    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, chatAccess:false});});
+    players.filter(p=>!p.privileges?.admin).map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, chatAccess:false});});
   };
 
   useEffect(() => {
@@ -128,10 +128,12 @@ const AdminControl: React.FunctionComponent = () => {
         if(!adminRequestMap.has(player.id)){
           setAdminRequestMap(adminRequestMap.set(player.id, player));
           toast({
-            title: 'Request to make Admin',
-            description: `${player.userName} asked to be promoted to Admin.`,
+            title: 'Admin Request',
+            description: `${player.userName} asked to become an Admin.`,
             status: 'info',
-            duration: 10000
+            duration: 10000,
+            isClosable: true,
+            position: 'bottom-left'
           })
         }
       });
@@ -165,19 +167,19 @@ const AdminControl: React.FunctionComponent = () => {
                       role='cell'>{player.id}</Td>
                       <Td role='cell'>{player.privileges?.admin?'Admin': 'Attendee'}</Td>
                       <Td role="cell"> 
-                        <Button colorScheme="red" size="md" onClick={() => handleBan(player.id)}>Ban</Button>
+                        <Button colorScheme="red" size="md" isDisabled={privilegeMap.get(player.id)?.privileges?.admin} onClick={() => handleBan(player.id)}>Ban</Button>
                       </Td>
                         <Td role='cell'>
                           <Box>
                             <HStack>
-                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.video?'green':'red'} onClick={()=> handleVideoBan(player.id)} >Video</Button>
-                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.audio?'green':'red'} onClick={()=> handleAudioBan(player.id)} >Audio</Button>
-                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.chat?'green':'red'} onClick={()=> handleChatBan(player.id)} >Chat</Button>
+                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.video?'green':'red'} isDisabled={privilegeMap.get(player.id)?.privileges?.admin} onClick={()=> handleVideoBan(player.id)} >Video</Button>
+                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.audio?'green':'red'} isDisabled={privilegeMap.get(player.id)?.privileges?.admin} onClick={()=> handleAudioBan(player.id)} >Audio</Button>
+                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.chat?'green':'red'} isDisabled={privilegeMap.get(player.id)?.privileges?.admin} onClick={()=> handleChatBan(player.id)} >Chat</Button>
                             </HStack>
                           </Box>
                         </Td>
                         <Td role="cell">
-                          <Button colorScheme={privilegeMap.get(player.id)?.privileges?.admin?'green':'gray'} onClick={()=>promoteToAdmin(player.id)}>Make Admin</Button>
+                          {!privilegeMap.get(player.id)?.privileges?.admin && <Button colorScheme='green' onClick={()=>promoteToAdmin(player.id)} >Make Admin</Button>}
                         </Td>
                         </Tr>
                   ))}

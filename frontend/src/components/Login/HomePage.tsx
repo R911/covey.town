@@ -5,11 +5,10 @@ import MediaErrorSnackbar
 import { TownJoinResponse } from '../../classes/TownsServiceClient';
 
 interface LoginProps {
-  doLogin: (initData: TownJoinResponse) => Promise<boolean>,
-  userName: string,
+  doLogin: (initData: TownJoinResponse) => Promise<boolean>
 }
 
-export default function HomePage({ doLogin, userName }: LoginProps): JSX.Element {
+export default function HomePage({ doLogin }: LoginProps): JSX.Element {
   const [mediaError, setMediaError] = useState<Error>();
 
  return (
@@ -17,7 +16,6 @@ export default function HomePage({ doLogin, userName }: LoginProps): JSX.Element
       <MediaErrorSnackbar error={mediaError} dismissError={() => setMediaError(undefined)} />
       <PreJoinScreens
         doLogin={doLogin}
-        userName={userName}
         setMediaError={setMediaError}
       />
     </>

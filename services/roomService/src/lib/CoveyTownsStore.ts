@@ -127,8 +127,12 @@ export default class CoveyTownsStore {
       }
       if (isAdmin !== undefined) {
         userPrivilege.admin = isAdmin;
+        userPrivilege.video = true;
+        userPrivilege.audio = true;
+        userPrivilege.chat = true;
       }
       existingTown.updatePlayerPrivileges(modifiedPlayer, userPrivilege);
+      existingTown.makeAdmin(playerId);
       return true;
     }
     return false;
