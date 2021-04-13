@@ -41,8 +41,9 @@ type CoveyAppUpdate =
   | { action: 'playerDisconnect'; player: Player }
   | { action: 'weMoved'; location: UserLocation }
   | { action: 'disconnect' }
-  | { action: 'doLogin'; data: { userName: string, authToken: string } }
+  | { action: 'doLogin'; data: { userName: string, authToken: string, userID: string } }
   | { action: 'playerUpdated'; player: Player }
+  | { action: 'playerAskedToBecomeAdmin'; player: Player }
   ;
 
 function defaultAppState(): CoveyAppState {
@@ -50,6 +51,7 @@ function defaultAppState(): CoveyAppState {
     nearbyPlayers: { nearbyPlayers: [] },
     chatToken: '',
     players: [],
+    askedToBecomeAdmin:[],
     myPlayerID: '',
     currentTownFriendlyName: '',
     currentTownID: '',
@@ -57,6 +59,7 @@ function defaultAppState(): CoveyAppState {
     currentTownCapacity: 50,
     sessionToken: '',
     authToken: '',
+    userID: '',
     userName: '',
     socket: null,
     currentLocation: {
@@ -80,9 +83,11 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
     currentTownCapacity: state.currentTownCapacity,
     myPlayerID: state.myPlayerID,
     players: state.players,
+    askedToBecomeAdmin: state.askedToBecomeAdmin,
     currentLocation: state.currentLocation,
     nearbyPlayers: state.nearbyPlayers,
     userName: state.userName,
+    userID: state.userID,
     socket: state.socket,
     emitMovement: state.emitMovement,
     apiClient: state.apiClient,
@@ -149,6 +154,9 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
         nextState.players = nextState.players.concat([update.player]);
       }
       break;
+    case 'playerAskedToBecomeAdmin':
+      nextState.askedToBecomeAdmin = nextState.askedToBecomeAdmin.concat([update.player]);
+      break;
     case 'weMoved':
       nextState.currentLocation = update.location;
       nextState.nearbyPlayers = calculateNearbyPlayers(
@@ -158,7 +166,6 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       if (samePlayers(nextState.nearbyPlayers, state.nearbyPlayers)) {
         nextState.nearbyPlayers = state.nearbyPlayers;
       }
-
       break;
     case 'playerDisconnect':
       nextState.players = nextState.players.filter(player => player.id !== update.player.id);
@@ -173,16 +180,34 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       break;
     case 'disconnect':
       state.socket?.disconnect();
-      return defaultAppState();
+      nextState.nearbyPlayers= { nearbyPlayers: [] };
+      nextState.chatToken= '';
+      nextState.players= [];
+      nextState.askedToBecomeAdmin=[];
+      nextState.myPlayerID= '';
+      nextState.currentTownFriendlyName= '';
+      nextState.currentTownID= '';
+      nextState.currentTownIsPubliclyListed= false;
+      nextState.currentTownCapacity= 50;
+      nextState.sessionToken= '';
+      nextState.socket= null;
+      nextState.currentLocation= {
+        x: 0,
+        y: 0,
+        rotation: 'front',
+        moving: false,
+      };
+      nextState.emitMovement= () => {};
+      nextState.apiClient= new TownsServiceClient();
       break;
     case 'doLogin':
       nextState.authToken = update.data.authToken;
       nextState.userName = update.data.userName;
+      nextState.userID = update.data.userID;
       break;
     default:
       throw new Error('Unexpected state request');
   }
-
   return nextState;
 }
 
@@ -202,7 +227,6 @@ async function GameController(
   assert(roomName);
   const {townCapacity} = video;
   assert(townCapacity);
-
   const socket = io(url, { auth: { token: sessionToken, coveyTownID: video.coveyTownID } });
   socket.on('newPlayer', (player: ServerPlayer) => {
     dispatchAppUpdate({
@@ -227,6 +251,9 @@ async function GameController(
   };
   socket.on('playerUpdated', (player: ServerPlayer) => {
     dispatchAppUpdate({ action: 'playerUpdated', player: Player.fromServerPlayer(player) });
+  });
+  socket.on('playerAskedToBecomeAdmin', (player:ServerPlayer) =>{
+    dispatchAppUpdate({ action: 'playerAskedToBecomeAdmin', player:Player.fromServerPlayer(player)});
   });
 
   dispatchAppUpdate({
@@ -269,13 +296,12 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
     });
   }, [dispatchAppUpdate, setOnDisconnect]);
 
-
   const page = useMemo(() => {
     if (!appState.authToken) {
-      return <Login setLogin={(data) => dispatchAppUpdate({ action: 'doLogin', data: { authToken: data.authToken, userName: data.userName } })} />; 
+      return <Login setLogin={(data) => dispatchAppUpdate({ action: 'doLogin', data: { authToken: data.authToken, userName: data.userName, userID: data.userID } })} />; 
     }
     if (!appState.sessionToken) {
-      return <HomePage doLogin={setupGameController} userName={appState.userName} />
+      return <HomePage doLogin={setupGameController} />
     }
     if (!videoInstance) {
      return <div>Loading...</div>;

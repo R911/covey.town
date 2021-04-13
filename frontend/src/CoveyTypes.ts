@@ -18,6 +18,7 @@ export type NearbyPlayers = {
 export type CoveyAppState = {
   sessionToken: string,
   authToken: string,
+  userID: string,
   userName: string,
   chatToken: string,
   currentTownFriendlyName: string,
@@ -26,6 +27,7 @@ export type CoveyAppState = {
   currentTownCapacity:number,
   myPlayerID: string,
   players: Player[],
+  askedToBecomeAdmin: Player[],
   currentLocation: UserLocation,
   nearbyPlayers: NearbyPlayers,
   emitMovement: (location: UserLocation) => void,

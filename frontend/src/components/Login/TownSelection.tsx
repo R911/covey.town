@@ -31,18 +31,16 @@ import Chat from '../../classes/Chat/Chat';
 
 interface TownSelectionProps {
   doLogin: (initData: TownJoinResponse) => Promise<boolean>,
-  userID: string,
 }
 
-export default function TownSelection({ doLogin, userID }: TownSelectionProps): JSX.Element {
-  const [userName, setUserName] = useState<string>(userID);
+export default function TownSelection({ doLogin}: TownSelectionProps): JSX.Element {
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
   const [currentPublicTowns, setCurrentPublicTowns] = useState<CoveyTownInfo[]>();
   const [townSize, setTownSize] = useState(50);
   const { connect } = useVideoContext();
-  const { apiClient, myPlayerID, currentTownID } = useCoveyAppState();
+  const { apiClient, userID, userName } = useCoveyAppState();
   const toast = useToast();
 
   const updateTownListings = useCallback(() => {
@@ -53,6 +51,8 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
         );
       })
   }, [setCurrentPublicTowns, apiClient]);
+
+
   useEffect(() => {
     updateTownListings();
     const timer = setInterval(updateTownListings, 2000);
@@ -80,7 +80,7 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
           });
           return;
         }
-        const initData = await Video.setup(userName, coveyRoomID);
+        const initData = await Video.setup(userName, userID, coveyRoomID);
         await Chat.setup(initData.coveyUserID, userName, coveyRoomID  , initData.providerChatToken);
         const loggedIn = await doLogin(initData);
         if (loggedIn) {
@@ -95,7 +95,7 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
         });
       }
     },
-    [userName, doLogin, toast, connect, myPlayerID, currentTownID],
+    [userName, doLogin, toast, connect, userID],
   );
 
   const handleCreate = async () => {
@@ -161,19 +161,8 @@ export default function TownSelection({ doLogin, userID }: TownSelectionProps): 
         <Stack>
           <Box p='4' borderWidth='1px' borderRadius='lg'>
             <Heading as='h2' size='lg'>
-              Select a username
+              Welcome {userName}
             </Heading>
-
-            <FormControl>
-              <FormLabel htmlFor='name'>Name</FormLabel>
-              <Input
-                autoFocus
-                name='name'
-                placeholder='Your name'
-                value={userName}
-                onChange={event => setUserName(event.target.value)}
-              />
-            </FormControl>
           </Box>
           <Box borderWidth='1px' borderRadius='lg'>
             <Heading p='4' as='h2' size='lg'>

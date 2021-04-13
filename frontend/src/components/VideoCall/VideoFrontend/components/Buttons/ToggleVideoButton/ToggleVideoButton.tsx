@@ -18,8 +18,13 @@ export default function ToggleVideoButton(props: {
   const lastClickTimeRef = useRef(0);
   const hasVideoDevices = useHasVideoInputDevices();
   const {myPlayerID, players} = useCoveyAppState();
-  const player = players.find(player => player.id === myPlayerID);
-  const videoPrivilege = player?.privileges?.video;
+  let videoPrivilege = true;
+  const player = players.find(player => player.id === myPlayerID);  
+  if(player!==undefined){
+    if(player.privileges!==undefined){
+      videoPrivilege = player?.privileges?.video;
+    }    
+  }
 
   const toggleVideo = useCallback(async () => {
     if (Date.now() - lastClickTimeRef.current > 200) {

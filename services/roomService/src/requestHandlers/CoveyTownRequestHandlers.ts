@@ -1,9 +1,10 @@
 import assert from 'assert';
 import { Socket } from 'socket.io';
-import Player from '../types/Player';
+import { AskToBecomeAdminRequest } from '../client/TownsServiceClient';
 import { CoveyTownList, UserLocation } from '../CoveyTypes';
-import CoveyTownListener from '../types/CoveyTownListener';
 import CoveyTownsStore from '../lib/CoveyTownsStore';
+import CoveyTownListener from '../types/CoveyTownListener';
+import Player from '../types/Player';
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -11,9 +12,10 @@ import CoveyTownsStore from '../lib/CoveyTownsStore';
 export interface TownJoinRequest {
   /** userName of the player that would like to join * */
   userName: string;
+
+  userId?: string;
   /** ID of the town that the player would like to join * */
   coveyTownID: string;
-  capacity?: number;
 }
 
 /**
@@ -107,7 +109,6 @@ export interface PlayerUpdateRequest {
   coveyTownID: string;
   coveyTownPassword: string;
   userId: string;
-  userPassword: string;
   playerId: string;
   videoAccess?: boolean;
   audioAccess?: boolean;
@@ -119,7 +120,6 @@ export interface BanPlayerRequest {
   coveyTownID: string;
   coveyTownPassword: string;
   userId: string;
-  userPassword: string;
   playerId: string;
 }
 
@@ -127,7 +127,6 @@ export interface EmptyRoomRequest {
   coveyTownID: string;
   coveyTownPassword: string;
   userId: string;
-  userPassword: string;
 }
 
 /**
@@ -159,12 +158,12 @@ export async function townJoinHandler(
       message: 'Error: No such town',
     };
   }
-  const newPlayer = new Player(requestData.userName);
+  const newPlayer = new Player(requestData.userName, requestData.userId);
   const newSession = await coveyTownController.addPlayer(newPlayer);
-  if (newSession === undefined){
+  if (newSession === undefined) {
     return {
       isOK: false,
-      message: 'Error: Player Banned from town',
+      message: 'Error: Player Banned from town/ Already Logged In.',
     };
   }
   assert(newSession.videoToken);
@@ -202,7 +201,11 @@ export async function townCreateHandler(
       message: 'FriendlyName must be specified',
     };
   }
-  const newTown = townsStore.createTown(requestData.friendlyName, requestData.isPubliclyListed, requestData.capacity);
+  const newTown = townsStore.createTown(
+    requestData.friendlyName,
+    requestData.isPubliclyListed,
+    requestData.capacity,
+  );
   return {
     isOK: true,
     response: {
@@ -230,7 +233,13 @@ export async function townUpdateHandler(
   requestData: TownUpdateRequest,
 ): Promise<ResponseEnvelope<Record<string, null>>> {
   const townsStore = CoveyTownsStore.getInstance();
-  const success = townsStore.updateTown(requestData.coveyTownID, requestData.coveyTownPassword, requestData.friendlyName, requestData.isPubliclyListed, requestData.capacity);
+  const success = townsStore.updateTown(
+    requestData.coveyTownID,
+    requestData.coveyTownPassword,
+    requestData.friendlyName,
+    requestData.isPubliclyListed,
+    requestData.capacity,
+  );
   return {
     isOK: success,
     response: {},
@@ -259,37 +268,79 @@ export async function townPartcipantListHandler(
   }
 }
 
-export async function playerUpdateHandler(requestData: PlayerUpdateRequest): Promise<ResponseEnvelope<Record<string, null>>> {
+export async function playerUpdateHandler(
+  requestData: PlayerUpdateRequest,
+): Promise<ResponseEnvelope<Record<string, null>>> {
   const townStore = CoveyTownsStore.getInstance();
-  const success = townStore.updatePlayer(requestData.coveyTownID, requestData.coveyTownPassword, requestData.userId, requestData.userPassword, requestData.playerId, requestData.videoAccess, requestData.audioAccess, requestData.chatAccess, requestData.isAdmin); 
+  const success = townStore.updatePlayer(
+    requestData.coveyTownID,
+    requestData.coveyTownPassword,
+    requestData.userId,
+    requestData.playerId,
+    requestData.videoAccess,
+    requestData.audioAccess,
+    requestData.chatAccess,
+    requestData.isAdmin,
+  );
   return {
     isOK: success,
     response: {},
-    message: !success ? 'Invalid password or update values specified. Please double check your user update password.' : undefined,
+    message: !success
+      ? 'Invalid password or update values specified. Please double check your user update password.'
+      : undefined,
   };
 }
 
-export async function banPlayerHandler(requestData:BanPlayerRequest) : Promise<ResponseEnvelope<Record<string, null>>> {
+export async function banPlayerHandler(
+  requestData: BanPlayerRequest,
+): Promise<ResponseEnvelope<Record<string, null>>> {
   const townStore = CoveyTownsStore.getInstance();
-  const success = townStore.banPlayer(requestData.coveyTownID, requestData.coveyTownPassword, requestData.userId, requestData.userPassword, requestData.playerId); 
+  const success = townStore.banPlayer(
+    requestData.coveyTownID,
+    requestData.coveyTownPassword,
+    requestData.userId,
+    requestData.playerId,
+  );
   return {
     isOK: success,
     response: {},
-    message: !success ? 'Invalid password or player values specified. Please double check your user password.' : undefined,
+    message: !success
+      ? 'Invalid password or player values specified. Please double check your user password.'
+      : undefined,
   };
 }
 
-export async function emptyRoomHandler(requestData:EmptyRoomRequest) : Promise<ResponseEnvelope<Record<string, null>>> {
+export async function askToBecomeAdminHandler(
+  requestData: AskToBecomeAdminRequest,
+): Promise<ResponseEnvelope<Record<string, null>>> {
   const townStore = CoveyTownsStore.getInstance();
-  const success = townStore.emptyTown(requestData.coveyTownID, requestData.coveyTownPassword, requestData.userId, requestData.userPassword); 
+  const success = townStore.askToBecomeAdmin(requestData.coveyTownID, requestData.userId);
   return {
     isOK: success,
     response: {},
-    message: !success ? 'Invalid password or user values specified. Please double check your user password.' : undefined,
+    message: !success
+      ? 'Invalid town id or user id values specified. Please double check your ids.'
+      : undefined,
   };
 }
 
-
+export async function emptyRoomHandler(
+  requestData: EmptyRoomRequest,
+): Promise<ResponseEnvelope<Record<string, null>>> {
+  const townStore = CoveyTownsStore.getInstance();
+  const success = townStore.emptyTown(
+    requestData.coveyTownID,
+    requestData.coveyTownPassword,
+    requestData.userId,
+  );
+  return {
+    isOK: success,
+    response: {},
+    message: !success
+      ? 'Invalid password or user values specified. Please double check your user password.'
+      : undefined,
+  };
+}
 
 /**
  * An adapter between CoveyTownController's event interface (CoveyTownListener)
@@ -318,6 +369,9 @@ function townSocketAdapter(socket: Socket): CoveyTownListener {
     },
     onPlayerUpdated(updatedPlayer: Player) {
       socket.emit('playerUpdated', updatedPlayer);
+    },
+    onPlayerAskToBecomeAdmin(player: Player) {
+      socket.emit('playerAskedToBecomeAdmin', player);
     },
   };
 }

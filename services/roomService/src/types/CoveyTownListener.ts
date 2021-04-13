@@ -30,4 +30,6 @@ export default interface CoveyTownListener {
   onPlayerRemoved(): void;
 
   onPlayerUpdated(updatedPlayer: Player): void;
+
+  onPlayerAskToBecomeAdmin(player: Player): void;
 }

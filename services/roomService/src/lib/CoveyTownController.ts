@@ -72,7 +72,9 @@ export default class CoveyTownController {
   /** The list of CoveyTownListeners that are subscribed to events in this town * */
   private _listeners: CoveyTownListener[] = [];
 
-  private _listenerMap: Map<string, CoveyTownListener> = new Map<string, CoveyTownListener>(); 
+  private _listenerMap: Map<string, CoveyTownListener> = new Map<string, CoveyTownListener>();
+
+  private _adminSet: Set<string> = new Set<string>();
 
   private readonly _coveyTownID: string;
 
@@ -100,8 +102,21 @@ export default class CoveyTownController {
    * @param newPlayer The new player to add to the town
    */
   async addPlayer(newPlayer: Player): Promise<PlayerSession | undefined> {
-    if (this._bannedPlayers.find(p => p.id === newPlayer.id)) {
+    if (
+      this._bannedPlayers.find(p => p.id === newPlayer.id) ||
+      this._players.find(p => p.id === newPlayer.id)
+    ) {
       return undefined;
+    }
+
+    if (
+      this._adminSet.has(newPlayer.id) ||
+      (this._players.length === 0 && this._adminSet.size === 0)
+    ) {
+      const userPrivilege = newPlayer.privileges;
+      userPrivilege.admin = true;
+      newPlayer.updatePrivilages(userPrivilege);
+      this._adminSet.add(newPlayer.id);
     }
 
     const theSession = new PlayerSession(newPlayer);
@@ -151,7 +166,7 @@ export default class CoveyTownController {
    *
    * @param listener New listener
    */
-  addTownListener(listener: CoveyTownListener, user:string): void {
+  addTownListener(listener: CoveyTownListener, user: string): void {
     this._listeners.push(listener);
     this._listenerMap.set(user, listener);
   }
@@ -162,8 +177,8 @@ export default class CoveyTownController {
    * @param listener The listener to unsubscribe, must be a listener that was registered
    * with addTownListener, or otherwise will be a no-op
    */
-  removeTownListener(listener: CoveyTownListener|undefined, user:string): void {
-    this._listeners = this._listeners.filter((v) => v !== listener);
+  removeTownListener(listener: CoveyTownListener | undefined, user: string): void {
+    this._listeners = this._listeners.filter(v => v !== listener);
     this._listenerMap.delete(user);
   }
 
@@ -189,15 +204,23 @@ export default class CoveyTownController {
     return this._sessions.find(p => p.player.id === playerId);
   }
 
-  banPlayer(session: PlayerSession): void{
+  banPlayer(session: PlayerSession): void {
     this._listenerMap.get(session.player.id)?.onPlayerRemoved();
     this._bannedPlayers.push(session.player);
     this.removeTownListener(this._listenerMap.get(session.player.id), session.player.id);
     this.destroySession(session);
   }
-  
-  updatePlayerPrivileges(player:Player, privilege:UserPrivileges): void {
+
+  updatePlayerPrivileges(player: Player, privilege: UserPrivileges): void {
     player.updatePrivilages(privilege);
-    this._listeners.forEach((listener) => listener.onPlayerUpdated(player));
+    this._listeners.forEach(listener => listener.onPlayerUpdated(player));
+  }
+
+  askToBecomeAdmin(player: Player): void {
+    this._listeners.forEach(listener => listener.onPlayerAskToBecomeAdmin(player));
+  }
+
+  makeAdmin(playerId: string): void {
+    this._adminSet.add(playerId);
   }
 }

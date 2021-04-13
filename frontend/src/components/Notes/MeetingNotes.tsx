@@ -113,6 +113,14 @@ export default function MeetingNotes(): JSX.Element {
               {' '}
               Add Note{' '}
             </Button>
+            <Button
+              data-testid='downloadButton'
+              colorScheme='teal'
+              // onClick={}
+              >
+              {' '}
+              Download {' '}
+            </Button>
           </Flex>
         </Box>
       </Box>

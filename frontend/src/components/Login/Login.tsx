@@ -78,6 +78,7 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
         setLogin({
           authToken: response.sessionToken,
           userName: response.userName,
+          userID: response.userID,
         })
       }
     });
@@ -89,29 +90,42 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
     const letter = /[a-z]/;
     const upper  = /[A-Z]/;
     const number = /[0-9]/;
+    if (userInfo.username.length === 0) {
+      setError("Please fill username and password");
+      return false;
+    }
+    if (userInfo.username.length < 4 || userInfo.username.length > 20) {
+      setError("User Name should be between 4 to 20 characters");
+      return false;
+    }
     if(userInfo.password.length < 8 
+      || userInfo.password.length > 16
       || userInfo.password !== userInfo.confirmPassword 
       || !letter.test(userInfo.password) 
       || !number.test(userInfo.password) 
       || !upper.test(userInfo.password)) {
+      if(userInfo.password.length > 16){
+        setError("Password cannot be more than 16 characters");
+        return false;
+      }
       if(userInfo.password.length < 8){
-        setError("Please make sure password is longer than 8 characters.");
+        setError("Password must have at least 8 characters");
         return false;
       }
       if(userInfo.password !== userInfo.confirmPassword){
-        setError("Please make sure passwords match.");
+        setError("Password and Confirm Password should match");
         return false;
       }
       if(!letter.test(userInfo.password)){
-        setError("Please make sure password includes a lowercase letter.");
+        setError("Password must include a lowercase character");
         return false;
       }
       if(!number.test(userInfo.password)){
-        setError("Please make sure password includes a Digit");
+        setError("Password must include a digit");
         return false;
       }
       if(!upper.test(userInfo.password)) {
-        setError("Please make sure password includes an uppercase letter.");
+        setError("Password must include an uppercase character");
         return false;
       }
     }
@@ -123,8 +137,9 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
         setError(response?.error || '');
       } else {
         setLogin({
-          sessionToken: response.sessionToken,
+          authToken: response.sessionToken,
           userName: response.userName,
+          userID: response.userID,
         })
       }
     });
@@ -156,6 +171,7 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
               id="outlined-required"
               label="User Name"
               placeholder="Enter your user name"
+              value={userInfo.username}
               onChange={(e) => handleInputChange({
                 username: e.target.value,
                 password: userInfo.password,
@@ -167,10 +183,11 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
             <FormLabel>User Password</FormLabel>
             <Input
               required
-              id="outlined-required"
+              id="outlined-required-password"
               label="Password"
               type="password"
               placeholder="Enter your password"
+              value={userInfo.password}
               onChange={(e) => handleInputChange({
                 password: e.target.value,
                 username: userInfo.username,
@@ -183,10 +200,11 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
               <FormLabel>Confirm Password</FormLabel>
               <Input
                 required
-                id="outlined-required"
+                id="outlined-required-confirm-password"
                 label="Confirm Password"
                 type="password"
-                placeholder="Confirm password"
+                placeholder="Enter your password again"
+                value={userInfo.confirmPassword}
                 onChange={(e) => handleInputChange({
                   password: userInfo.password,
                   username: userInfo.username,

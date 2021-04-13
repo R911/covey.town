@@ -3,17 +3,14 @@ import React, { useCallback, useState, useEffect } from 'react';
 import {
   Button,
   Table,
-  TableCaption,
   Thead,
   Tbody,
   Tr,
   Th,
   Td,
-  Collapse,
   FormControl,
   FormLabel,
   Input,
-  Checkbox,
   Box,
   Modal,
   ModalBody,
@@ -34,12 +31,12 @@ import Player from '../../../../../../classes/Player';
 import {PlayerUpdateRequest} from '../../../../../../classes/TownsServiceClient';
 
 const AdminControl: React.FunctionComponent = () => {
-  const {isOpen, onOpen, onClose, onToggle} = useDisclosure()
+  const {isOpen, onOpen, onClose} = useDisclosure()
   const video = useMaybeVideo()
-  const {currentTownID, currentTownFriendlyName, myPlayerID, players, apiClient} = useCoveyAppState();
+  const {currentTownID, currentTownFriendlyName, myPlayerID, players, apiClient, askedToBecomeAdmin} = useCoveyAppState();
   const [townPassword, setTownPassword] = useState<string>('');
-  const [userPassword, setUserPassword] = useState<string>('');
   const [privilegeMap, setPrivilegeMap] = useState(new Map<string, Player| undefined>());
+  const [adminRequestMap, setAdminRequestMap] = useState(new Map<string, Player| undefined>());
 
   const toast = useToast();
 
@@ -50,14 +47,13 @@ const AdminControl: React.FunctionComponent = () => {
 
   const closeSettings = useCallback(()=>{
     onClose();
+    setTownPassword('');
     video?.unPauseGame();
   }, [onClose, video]);
 
   const handleBan = async (playerId: string) => {
     try {
-      console.log(townPassword);
-      console.log(userPassword);
-      await apiClient.banPlayer({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID, userPassword:userPassword, playerId});
+      await apiClient.banPlayer({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID, playerId});
     } catch (err) {
       toast({
         title: 'Unable to connect to Towns Service',
@@ -69,7 +65,7 @@ const AdminControl: React.FunctionComponent = () => {
 
   const handleEmptyTown = async () => {
     try {
-      await apiClient.emptyTown({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID, userPassword:userPassword});
+      await apiClient.emptyTown({coveyTownID:currentTownID, coveyTownPassword:townPassword, userId:myPlayerID});
     } catch (err) {
       toast({
         title: 'Unable to connect to Towns Service',
@@ -92,39 +88,58 @@ const AdminControl: React.FunctionComponent = () => {
   };
 
   const handleAudioBan = async (playerId: string) => {
-    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, audioAccess:false});
+    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId, audioAccess:false});
   };
 
   const handleVideoBan = async (playerId: string) => {
-    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, videoAccess:false});
+    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId, videoAccess:false});
   };
 
   const handleChatBan = async (playerId: string) => {
-    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, chatAccess:false});
+    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId, chatAccess:false});
   };
 
   const promoteToAdmin = async (playerId: string) => {
-    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId, isAdmin:true});
+    handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId, isAdmin:true});
   };
 
   const handleAllAudioBan = async () => {
-    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId: player.id, audioAccess:false});});
+    players.filter(p=>!p.privileges?.admin).map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, audioAccess:false});});
   };
 
   const handleAllVideoBan = async () => {
-    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId: player.id, videoAccess:false});});
+    players.filter(p=>!p.privileges?.admin).map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, videoAccess:false});});
   };
 
   const handleAllChatBan = async () => {
-    players.map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, userPassword:userPassword, playerId: player.id, chatAccess:false});});
+    players.filter(p=>!p.privileges?.admin).map((player)=>{handlePlayerModify({coveyTownID:currentTownID, coveyTownPassword: townPassword,userId:myPlayerID, playerId: player.id, chatAccess:false});});
   };
 
   useEffect(() => {
     players?.map((player) => {
       setPrivilegeMap(privilegeMap.set(player.id, player));
-      console.log(player);
     });
   },[players]);
+
+  useEffect(() => {
+    const me = players.find(player=>player.id===myPlayerID);
+    if( me?.privileges?.admin){
+      askedToBecomeAdmin?.map((player) => {
+        if(!adminRequestMap.has(player.id)){
+          setAdminRequestMap(adminRequestMap.set(player.id, player));
+          toast({
+            title: 'Admin Request',
+            description: `${player.userName} asked to become an Admin.`,
+            status: 'info',
+            duration: 10000,
+            isClosable: true,
+            position: 'bottom-left'
+          })
+        }
+      });
+    }
+    
+  },[askedToBecomeAdmin]);
 
   return <>
     <form>
@@ -143,11 +158,6 @@ const AdminControl: React.FunctionComponent = () => {
                      value={townPassword}
                      onChange={(event) => setTownPassword(event.target.value) } type="password"
               />
-              <FormLabel htmlFor="userPassword">Your Password</FormLabel>
-              <Input id="userPassword" autoFocus name="userPassword" placeholder="Your Password"
-                     value={userPassword}
-                     onChange={(event) => setUserPassword(event.target.value) } type="password"
-              />
             </FormControl>
           <Table>
                 <Thead><Tr><Th>User Name</Th><Th>User ID</Th><Th>Type</Th><Th>Ban/Kick</Th><Th>Disable Controls</Th><Th>Promote</Th></Tr></Thead>
@@ -157,19 +167,19 @@ const AdminControl: React.FunctionComponent = () => {
                       role='cell'>{player.id}</Td>
                       <Td role='cell'>{player.privileges?.admin?'Admin': 'Attendee'}</Td>
                       <Td role="cell"> 
-                        <Button colorScheme="red" size="md" onClick={() => handleBan(player.id)}>Ban</Button>
+                        <Button colorScheme="red" size="md" isDisabled={privilegeMap.get(player.id)?.privileges?.admin} onClick={() => handleBan(player.id)}>Ban</Button>
                       </Td>
                         <Td role='cell'>
                           <Box>
                             <HStack>
-                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.video?'green':'red'} onClick={()=> handleVideoBan(player.id)} >Video</Button>
-                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.audio?'green':'red'} onClick={()=> handleAudioBan(player.id)} >Audio</Button>
-                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.chat?'green':'red'} onClick={()=> handleChatBan(player.id)} >Chat</Button>
+                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.video?'green':'red'} isDisabled={privilegeMap.get(player.id)?.privileges?.admin} onClick={()=> handleVideoBan(player.id)} >Video</Button>
+                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.audio?'green':'red'} isDisabled={privilegeMap.get(player.id)?.privileges?.admin} onClick={()=> handleAudioBan(player.id)} >Audio</Button>
+                              <Button colorScheme={privilegeMap.get(player.id)?.privileges?.chat?'green':'red'} isDisabled={privilegeMap.get(player.id)?.privileges?.admin} onClick={()=> handleChatBan(player.id)} >Chat</Button>
                             </HStack>
                           </Box>
                         </Td>
                         <Td role="cell">
-                          <Button colorScheme={privilegeMap.get(player.id)?.privileges?.admin?'green':'gray'} onClick={()=>promoteToAdmin(player.id)}>Make Admin</Button>
+                          {!privilegeMap.get(player.id)?.privileges?.admin && <Button colorScheme='green' onClick={()=>promoteToAdmin(player.id)} >Make Admin</Button>}
                         </Td>
                         </Tr>
                   ))}
