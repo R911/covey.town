@@ -163,7 +163,7 @@ export async function townJoinHandler(
   if (newSession === undefined) {
     return {
       isOK: false,
-      message: 'Error: Player Banned from town',
+      message: 'Error: Player Banned from town/ Already Logged In.',
     };
   }
   assert(newSession.videoToken);
