@@ -233,8 +233,8 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
               if (dataPassword.length) {
                 const token = crypto.randomBytes(16).toString('base64');
                 req.session.sessionToken = token;
-                resp = { 
-                  userID: dataPassword[0].user_id, 
+                resp = {
+                  userID: dataPassword[0].user_id,
                   userName: dataPassword[0].user_name,
                   sessionToken: token,
                 };
@@ -317,7 +317,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   });
 
   /**
-   *
+   * Logout Route.
    */
   app.post('/logout', BodyParser.json(), async (req, res) => {
     req.session.destroy(() => {
