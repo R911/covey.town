@@ -47,7 +47,7 @@ export default class Chat {
     this._roomID = roomID;
     this._chatToken = chatToken;
     this._meetingNotesChannelID = md5(`meeting-notes-${this._roomID}`);
-    this._everyoneChatChannelID = md5(`everyone-${this._roomID}`);
+    this._everyoneChatChannelID = md5(`${this._roomID}`);
   }
 
   public set handleMeetingNoteAdded(callback: (message: Message) => void) {
