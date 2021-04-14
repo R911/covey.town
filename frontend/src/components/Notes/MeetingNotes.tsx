@@ -12,7 +12,7 @@ import useCoveyAppState from '../../hooks/useCoveyAppState';
  * all users in the town.
  */
 export default function MeetingNotes(): JSX.Element {
-  const {players, myPlayerID} = useCoveyAppState();
+  const { players, myPlayerID, currentTownID } = useCoveyAppState();
   const [typedNote, setTypedNote] = useState<string>('');
   const [meetingNotes, setMeetingNotes] = useState<Message[]>([]);
   const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
@@ -27,10 +27,9 @@ export default function MeetingNotes(): JSX.Element {
     setUserMeetingPrivilege(chatPrivilege);
   }, [players, myPlayerID]);
 
-
   /**
    * This function uses the API to send the meeting note.
-   * 
+   *
    * @param noteToSend Notes to be sent out to town
    */
   function sendNote(noteToSend: string) {
@@ -40,13 +39,13 @@ export default function MeetingNotes(): JSX.Element {
 
   useEffect(() => {
     assert(chat);
-     /**
+    /**
      * This function adds the new meeting note to the current list of notes.
-     * 
-     * @param message Meeting note to be sent out to recipients 
+     *
+     * @param message Meeting note to be sent out to recipients
      */
     const onNoteAdded = (message: Message): void => {
-      setMeetingNotes(arr => [...arr, message]); 
+      setMeetingNotes(arr => [...arr, message]);
     };
 
     const initMeetingNotesChannel = async () => {
@@ -59,9 +58,9 @@ export default function MeetingNotes(): JSX.Element {
   }, [chat]);
 
   /**
-   * This function always users to send meeting note using the "Enter" button on 
-   * the keyboard. 
-   * 
+   * This function always users to send meeting note using the "Enter" button on
+   * the keyboard.
+   *
    * @param event User event from keyboard
    */
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -70,6 +69,22 @@ export default function MeetingNotes(): JSX.Element {
       event.stopPropagation();
       sendNote(typedNote);
     }
+  }
+
+  /**
+   * Saves the contents of meeting notes chat, into a text file and downloads it on the client.
+   */
+  function downloadNotes() {
+    const messageList: string[] = [];
+    meetingNotes.forEach(note => {
+      messageList.push(note.body);
+    });
+    const element = document.createElement('a');
+    const file = new Blob([messageList.join('\n')], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = `${currentTownID}-notes.txt`;
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
   }
 
   return (
@@ -113,13 +128,9 @@ export default function MeetingNotes(): JSX.Element {
               {' '}
               Add Note{' '}
             </Button>
-            <Button
-              data-testid='downloadButton'
-              colorScheme='teal'
-              // onClick={}
-              >
+            <Button data-testid='downloadButton' colorScheme='teal' onClick={downloadNotes}>
               {' '}
-              Download {' '}
+              Download{' '}
             </Button>
           </Flex>
         </Box>
