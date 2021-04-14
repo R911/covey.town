@@ -88,8 +88,8 @@ export default class Chat {
     try {
       const chatClient = await Chat.chat.setup();
     } catch (err) {
-      console.error(err);
-      throw err;
+      // console.error(err);
+      // throw err;
     }
   }
 
