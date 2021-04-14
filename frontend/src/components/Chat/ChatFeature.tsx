@@ -17,6 +17,7 @@ import Video from '../../classes/Video/Video';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 import Player from '../../classes/Player';
 import Chat from '../../classes/Chat/Chat';
+import { ChatConfig } from '../../CoveyTypes';
 
 /**
  * Chat feature where participants can send group chats, one-to-one chats,
@@ -52,6 +53,12 @@ export default function ChatFeature(): JSX.Element {
       setMessages(arr => [...arr, message]);
     };
 
+    async function newEveryoneMessageAlert(message: Message) {
+      if (participantsToSendTo.length === 1 && participantsToSendTo[0] === 'Everyone') {
+        handleMessageAdded(message);
+      }
+    }
+
     /**
      * This function creates a new message alert that is sent to users to
      * inform them of a new message.
@@ -76,13 +83,14 @@ export default function ChatFeature(): JSX.Element {
       participantIDs.push(playerUserName);
       participantIDs.sort();
       const participantString = participantIDs.join('-');
-
+      console.log(listenerString, participantString);
       if (listenerString === participantString) {
         handleMessageAdded(message);
       }
     }
     assert(chat);
     chat.handleChatMessageAdded = newMessageAlert;
+    chat.handleEveryoneChatMessageAdded = newEveryoneMessageAlert;
   }, [chat, participantsToSendTo, playerUserName]);
 
   /**
@@ -116,8 +124,12 @@ export default function ChatFeature(): JSX.Element {
   function sendMessage(messageToSend: string) {
     setTypedMessage('');
     const chatParticipants = participantsToSendTo.slice(0);
-    chatParticipants.push(playerUserName);
-    chat?.sendChatMessage(chatParticipants, `${playerUserName}: ${messageToSend}`);
+    if (chatParticipants.length === 1 && chatParticipants[0] === 'Everyone') {
+      chat?.sendEveryoneChat(`${playerUserName}: ${messageToSend}`);
+    } else {
+      chatParticipants.push(playerUserName);
+      chat?.sendChatMessage(chatParticipants, `${playerUserName}: ${messageToSend}`);
+    }
   }
 
   /**
@@ -157,8 +169,14 @@ export default function ChatFeature(): JSX.Element {
     async function loadChat() {
       assert(chat);
       const chatParticipants = participantsToSendTo.slice(0);
-      chatParticipants.push(playerUserName);
-      const messageHistory = await chat.initChat(chatParticipants, false);
+      let chatConfig: ChatConfig;
+      if (chatParticipants.length === 1 && chatParticipants[0] === 'Everyone') {
+        chatConfig = { isEveryoneChat: true, isMeetingNotes: false, friendlyName: 'everyone-chat' };
+      } else {
+        chatParticipants.push(playerUserName);
+        chatConfig = { isEveryoneChat: false, isMeetingNotes: false, friendlyName: '' };
+      }
+      const messageHistory = await chat.initChat(chatParticipants, chatConfig);
       setMessages(messageHistory);
     }
     if (participantsToSendTo.length > 0) {
@@ -166,7 +184,7 @@ export default function ChatFeature(): JSX.Element {
     } else {
       setMessages([]);
     }
-  }, [participantsToSendTo, chat, playerUserName]);
+  }, [participantsToSendTo, chat, playerUserName, coveyTownID]);
 
   return (
     <form>

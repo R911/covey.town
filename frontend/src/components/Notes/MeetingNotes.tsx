@@ -49,7 +49,11 @@ export default function MeetingNotes(): JSX.Element {
     };
 
     const initMeetingNotesChannel = async () => {
-      const messageHistory = await chat.initChat([], true);
+      const messageHistory = await chat.initChat([], {
+        isMeetingNotes: true,
+        isEveryoneChat: false,
+        friendlyName: 'meeting-notes',
+      });
       setMeetingNotes(arr => arr.concat(messageHistory));
     };
 
