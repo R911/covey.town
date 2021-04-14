@@ -155,12 +155,14 @@ describe('CoveyTownController', () => {
     const mockSocket = mock<Socket>();
     let testingTown: CoveyTownController;
     let player: Player;
+    let player2: Player;
     let session: PlayerSession;
     beforeEach(async () => {
       const townName = `connectPlayerSocket tests ${nanoid()}`;
       testingTown = CoveyTownsStore.getInstance().createTown(townName, false);
       mockReset(mockSocket);
       player = new Player('test player');
+      player2 = new Player('test player 2');
       session = (await testingTown.addPlayer(player)) as PlayerSession;
     });
     it('should reject connections with invalid town IDs by calling disconnect', async () => {
@@ -181,8 +183,8 @@ describe('CoveyTownController', () => {
           mockSocket,
         );
         townSubscriptionHandler(mockSocket);
-        await testingTown.addPlayer(player);
-        expect(mockSocket.emit).toBeCalledWith('newPlayer', player);
+        await testingTown.addPlayer(player2);
+        expect(mockSocket.emit).toBeCalledWith('newPlayer', player2);
       });
       it('should add a town listener, which should emit "playerMoved" to the socket when a player moves', async () => {
         TestUtils.setSessionTokenAndTownID(
