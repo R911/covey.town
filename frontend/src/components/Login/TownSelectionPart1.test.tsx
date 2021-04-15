@@ -93,11 +93,7 @@ function wrappedTownSelection() {
     currentTownFriendlyName: '',
     currentTownCapacity: 50,
     sessionToken: '',
-    authToken: '',
-    askedToBecomeAdmin: [],
-    chatToken: '',
     userName: '',
-    userID: '',
     socket: null,
     currentLocation: {
       x: 0,
@@ -109,7 +105,7 @@ function wrappedTownSelection() {
     },
     apiClient: new TownsServiceClient(),
   }}>
-    <TownSelection doLogin={doLoginMock} userID=''/></CoveyAppContext.Provider></ChakraProvider>;
+    <TownSelection doLogin={doLoginMock}/></CoveyAppContext.Provider></ChakraProvider>;
 }
 
 describe('Part 1 - Public room listing', () => {
