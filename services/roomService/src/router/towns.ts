@@ -39,6 +39,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
       user: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE,
+      ssl: { rejectUnauthorized: false },
     },
   });
 
