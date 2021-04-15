@@ -98,11 +98,11 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
       setError("User Name should be between 4 to 20 characters");
       return false;
     }
-    if(userInfo.password.length < 8 
+    if(userInfo.password.length < 8
       || userInfo.password.length > 16
-      || userInfo.password !== userInfo.confirmPassword 
-      || !letter.test(userInfo.password) 
-      || !number.test(userInfo.password) 
+      || userInfo.password !== userInfo.confirmPassword
+      || !letter.test(userInfo.password)
+      || !number.test(userInfo.password)
       || !upper.test(userInfo.password)) {
       if(userInfo.password.length > 16){
         setError("Password cannot be more than 16 characters");
@@ -214,9 +214,9 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
             </FormControl>
           }
           {error && <div className={classes.error}>{error}</div>}
-          <Button 
-            type="submit" 
-            className={classes.button} 
+          <Button
+            type="submit"
+            className={classes.button}
             onClick={isSignUp ? submitSignUp : submitLogin}
           >
             {isSignUp ? "Sign Up" : "Log In"}

@@ -325,7 +325,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   });
 
   /**
-   *
+   * Logout Route.
    */
   app.post('/logout', BodyParser.json(), async (req, res) => {
     req.session.destroy(() => {
