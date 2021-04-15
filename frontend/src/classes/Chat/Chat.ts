@@ -4,6 +4,7 @@ import assert from 'assert';
 import md5 from 'md5';
 import { Message } from 'twilio-chat/lib/message';
 import DebugLogger from '../DebugLogger';
+import { ChatConfig } from '../../CoveyTypes';
 
 export default class Chat {
   private static chat: Chat;
@@ -24,6 +25,8 @@ export default class Chat {
 
   private _meetingNotesChannelID: string;
 
+  private _everyoneChatChannelID: string;
+
   private _handleMeetingNoteAdded: (message: Message) => void = () => {
     throw Error(
       'Meeting Note Added handler not set. Set this function using handleMessageAdded method',
@@ -34,12 +37,17 @@ export default class Chat {
     throw Error('Message Added handler not set. Set this function using handleMessageAdded method');
   };
 
+  private _handleEveryoneChatMessageAdded: (message: Message) => void = () => {
+    throw Error('Message Added handler not set. Set this function using handleMessageAdded method');
+  };
+
   private constructor(userID: string, userName: string, roomID: string, chatToken: string) {
     this._userID = userID;
     this._username = userName;
     this._roomID = roomID;
     this._chatToken = chatToken;
     this._meetingNotesChannelID = md5(`meeting-notes-${this._roomID}`);
+    this._everyoneChatChannelID = md5(`${this._roomID}`);
   }
 
   public set handleMeetingNoteAdded(callback: (message: Message) => void) {
@@ -48,7 +56,10 @@ export default class Chat {
 
   public set handleChatMessageAdded(callback: (message: Message) => void) {
     this._handleChatMessageAdded = callback;
-    console.log('Callback set');
+  }
+
+  public set handleEveryoneChatMessageAdded(callback: (message: Message) => void) {
+    this._handleEveryoneChatMessageAdded = callback;
   }
 
   private async setup(): Promise<ChatClient> {
@@ -58,7 +69,7 @@ export default class Chat {
     this._chatClient = client;
     this._chatClient.on('channelInvited', (channel: Channel) => {
       console.log('Invited to channel', channel.uniqueName);
-      this.joinChannel(channel, false);
+      this.joinChannel(channel, { isMeetingNotes: false, isEveryoneChat: false, friendlyName: '' });
     });
     return client;
   }
@@ -77,8 +88,8 @@ export default class Chat {
     try {
       const chatClient = await Chat.chat.setup();
     } catch (err) {
-      console.error(err);
-      throw err;
+      // console.error(err);
+      // throw err;
     }
   }
 
@@ -86,13 +97,15 @@ export default class Chat {
     return Chat.chat;
   }
 
-  private async joinChannel(newChannel: Channel, isMeetingNotes: boolean): Promise<Channel> {
+  private async joinChannel(newChannel: Channel, chatConfig: ChatConfig): Promise<Channel> {
     if (newChannel.status !== 'joined') {
       await newChannel.join();
       console.log('Joined channel', newChannel.uniqueName);
     }
-    if (isMeetingNotes) {
+    if (chatConfig.isMeetingNotes) {
       newChannel.on('messageAdded', this._handleMeetingNoteAdded);
+    } else if (chatConfig.isEveryoneChat) {
+      newChannel.on('messageAdded', this._handleEveryoneChatMessageAdded);
     } else {
       newChannel.on('messageAdded', this._handleChatMessageAdded);
     }
@@ -120,15 +133,24 @@ export default class Chat {
     chatChannel.sendMessage(message);
   }
 
-  public async initChat(userNames: string[], isMeetingNotes: boolean): Promise<Message[]> {
+  public sendEveryoneChat(message: string): void {
+    const everyoneChatChannel = this._channelMap.get(this._everyoneChatChannelID);
+    if (!everyoneChatChannel) {
+      throw Error('Meeting notes channel does not exist');
+    }
+    everyoneChatChannel.sendMessage(message);
+  }
+
+  public async initChat(userNames: string[], chatConfig: ChatConfig): Promise<Message[]> {
     console.log('Initchat', userNames);
     let chatChannelUniqueName = '';
-    let chatChannelFriendlyName = '';
+    let chatChannelFriendlyName = chatConfig.friendlyName;
     let messageItems = [];
 
-    if (isMeetingNotes) {
+    if (chatConfig.isMeetingNotes) {
       chatChannelUniqueName = this._meetingNotesChannelID;
-      chatChannelFriendlyName = 'meeting-notes';
+    } else if (chatConfig.isEveryoneChat) {
+      chatChannelUniqueName = this._everyoneChatChannelID;
     } else {
       userNames.sort();
       const joinedIDs = userNames.join('-');
@@ -152,7 +174,7 @@ export default class Chat {
       assert(chatChannel);
       console.log(`chatChannel ${chatChannel.uniqueName}`);
 
-      const joinedChannel = await this.joinChannel(chatChannel, isMeetingNotes);
+      const joinedChannel = await this.joinChannel(chatChannel, chatConfig);
       userNames.forEach(id => {
         joinedChannel.invite(id);
         console.log(`Invited ${id}`);
