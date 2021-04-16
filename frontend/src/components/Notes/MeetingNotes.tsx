@@ -71,13 +71,9 @@ export default function MeetingNotes(): JSX.Element {
     if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
-      sendNote(typedNote);
-    }
-
-    if (event.keyCode === 32) { 
-      event.preventDefault();
-      event.stopPropagation();
-      setTypedNote(`${typedNote} `)
+      if(userMeetingPrivilege){
+        sendNote(typedNote);
+      }
     }
   }
 

@@ -141,13 +141,10 @@ export default function ChatFeature(): JSX.Element {
     if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
-      sendMessage(typedMessage);
-    }
-
-    if (event.keyCode === 32) { 
-      event.preventDefault();
-      event.stopPropagation();
-      setTypedMessage(`${typedMessage} `)
+      if(userChatPrivilege){
+        sendMessage(typedMessage);
+      }
+      
     }
   }
 
