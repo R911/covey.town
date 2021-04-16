@@ -1,8 +1,9 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
+import {io, Socket} from 'socket.io-client';
+import {Socket as ServerSocket} from 'socket.io';
+
+import {AddressInfo} from 'net';
 import http from 'http';
-import { AddressInfo } from 'net';
-import { Socket as ServerSocket } from 'socket.io';
-import { io, Socket } from 'socket.io-client';
 import { UserLocation, UserPrivileges } from '../CoveyTypes';
 
 export type RemoteServerPlayer = {
@@ -54,7 +55,7 @@ export function createSocketClient(
     playerUpdate: Promise<RemoteServerPlayer>;
     playerRemoved: Promise<void>;
     playerAskedToBecomeAdmin: Promise<RemoteServerPlayer>;
-} {
+  } {
   const address = server.address() as AddressInfo;
   const socket = io(`http://localhost:${address.port}`, {
     auth: { token: sessionToken, coveyTownID },
