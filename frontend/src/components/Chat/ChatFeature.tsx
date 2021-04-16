@@ -82,7 +82,7 @@ export default function ChatFeature(): JSX.Element {
       const participantIDs = participantsToSendTo.slice(0);
       participantIDs.push(playerUserName);
       participantIDs.sort();
-      const participantString = participantIDs.join('-'); 
+      const participantString = participantIDs.join('-');
       if (listenerString === participantString) {
         handleMessageAdded(message);
       }

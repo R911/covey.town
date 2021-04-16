@@ -59,7 +59,7 @@ export default class Chat {
     this._roomID = roomID;
     this._chatToken = chatToken;
     this._meetingNotesChannelID = md5(`meeting-notes-${this._roomID}`);
-    this._everyoneChatChannelID = md5(`${this._roomID}`);
+    this._everyoneChatChannelID = md5(this._roomID);
   }
 
   public set handleMeetingNoteAdded(callback: (message: Message) => void) {
@@ -93,10 +93,8 @@ export default class Chat {
     roomID: string,
     chatToken: string,
   ): Promise<void> {
-    if (!Chat.chat) {
-      Chat.chat = new Chat(userID, userName, roomID, chatToken);
-      assert(Chat.chat);
-    }
+    Chat.chat = new Chat(userID, userName, roomID, chatToken);
+    assert(Chat.chat);
 
     try {
       await Chat.chat.setup();
@@ -138,6 +136,8 @@ export default class Chat {
   /** Send the message string passed as a message to channel consisting of users whose usernames
    * are passed as the list */
   public sendChatMessage(userNames: string[], message: string): void {
+    assert(this._roomID);
+    userNames.push(this._roomID);
     userNames.sort();
     const joinedIDs = userNames.join('-');
     const chatChannelUniqueName = md5(joinedIDs);
@@ -172,6 +172,8 @@ export default class Chat {
     } else if (chatConfig.isEveryoneChat) {
       chatChannelUniqueName = this._everyoneChatChannelID;
     } else {
+      assert(this._roomID);
+      userNames.push(this._roomID);
       userNames.sort();
       const joinedIDs = userNames.join('-');
       chatChannelFriendlyName = joinedIDs;
