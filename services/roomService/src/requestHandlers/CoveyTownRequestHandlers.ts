@@ -1,6 +1,5 @@
 import assert from 'assert';
 import { Socket } from 'socket.io';
-import { AskToBecomeAdminRequest } from '../client/TownsServiceClient';
 import { CoveyTownList, UserLocation } from '../CoveyTypes';
 import CoveyTownsStore from '../lib/CoveyTownsStore';
 import CoveyTownListener from '../types/CoveyTownListener';
@@ -121,6 +120,11 @@ export interface BanPlayerRequest {
   coveyTownPassword: string;
   userId: string;
   playerId: string;
+}
+
+export interface AskToBecomeAdminRequest {
+  coveyTownID: string;
+  userId: string;
 }
 
 export interface EmptyRoomRequest {

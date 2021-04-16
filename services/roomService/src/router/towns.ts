@@ -2,7 +2,6 @@ import BodyParser from 'body-parser';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import { Express } from 'express';
-import session from 'express-session';
 import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import Knex from 'knex';
@@ -22,6 +21,8 @@ import {
   townUpdateHandler,
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const session = require('express-session');
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
       user: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE,
+      ssl: { rejectUnauthorized: false },
     },
   });
 
