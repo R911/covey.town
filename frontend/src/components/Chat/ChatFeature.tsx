@@ -82,8 +82,7 @@ export default function ChatFeature(): JSX.Element {
       const participantIDs = participantsToSendTo.slice(0);
       participantIDs.push(playerUserName);
       participantIDs.sort();
-      const participantString = participantIDs.join('-');
-      console.log(listenerString, participantString);
+      const participantString = participantIDs.join('-'); 
       if (listenerString === participantString) {
         handleMessageAdded(message);
       }
@@ -143,6 +142,12 @@ export default function ChatFeature(): JSX.Element {
       event.preventDefault();
       event.stopPropagation();
       sendMessage(typedMessage);
+    }
+
+    if (event.keyCode === 32) { 
+      event.preventDefault();
+      event.stopPropagation();
+      setTypedMessage(`${typedMessage} `)
     }
   }
 

@@ -331,7 +331,7 @@ function App(props: { setOnDisconnect: Dispatch<SetStateAction<Callback | undefi
         </Grid>
       </div>
     );
-  }, [setupGameController, appState.authToken, videoInstance, appState.sessionToken, appState.userName]);
+  }, [setupGameController, appState.authToken, videoInstance, appState.sessionToken]);
   return (
     <CoveyAppContext.Provider value={appState}>
       <VideoContext.Provider value={Video.instance()}>
