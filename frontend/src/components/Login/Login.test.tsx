@@ -31,6 +31,12 @@ function wrappedLoginUI() {
     currentTownFriendlyName: '',
     currentTownCapacity: 50,
     sessionToken: '',
+    playerPrivileges: {
+      admin: true,
+      audio: true,
+      video: true,
+      chat: true,
+    },
     authToken: '',
     askedToBecomeAdmin: [],
     chatToken: '',
