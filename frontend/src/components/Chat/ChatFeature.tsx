@@ -18,6 +18,7 @@ import useCoveyAppState from '../../hooks/useCoveyAppState';
 import Player from '../../classes/Player';
 import Chat from '../../classes/Chat/Chat';
 import { ChatConfig } from '../../CoveyTypes';
+import useMaybeVideo from '../../hooks/useMaybeVideo';
 
 /**
  * Chat feature where participants can send group chats, one-to-one chats,
@@ -34,6 +35,7 @@ export default function ChatFeature(): JSX.Element {
   const [playerUserName] = useState<string>(Video.instance()?.userName || '');
   const [chat] = useState<Chat>(Chat.instance());
   const [coveyTownID, setCoveyTownID] = useState<string>('');
+  const video = useMaybeVideo();
   
   useEffect(() => {
     if (playerPrivileges!==undefined){
@@ -231,6 +233,8 @@ export default function ChatFeature(): JSX.Element {
               placeholder='Type here'
               onKeyDown={onKeyDown}
               value={typedMessage}
+              onFocus={()=>video?.pauseGame()}
+              onBlur={()=>video?.unPauseGame()}
               onChange={event => setTypedMessage(event.target.value)}
             />
             <Button
