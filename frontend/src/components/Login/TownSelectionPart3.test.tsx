@@ -101,6 +101,7 @@ function wrappedTownSelection() {
           sessionToken: '',
           userName: 'testuser',
           socket: null,
+          playerPrivileges: undefined,
           currentLocation: {
             x: 0,
             y: 0,

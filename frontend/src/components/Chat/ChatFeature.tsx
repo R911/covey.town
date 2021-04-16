@@ -18,13 +18,14 @@ import useCoveyAppState from '../../hooks/useCoveyAppState';
 import Player from '../../classes/Player';
 import Chat from '../../classes/Chat/Chat';
 import { ChatConfig } from '../../CoveyTypes';
+import useMaybeVideo from '../../hooks/useMaybeVideo';
 
 /**
  * Chat feature where participants can send group chats, one-to-one chats,
  * and whole group chats
  */
 export default function ChatFeature(): JSX.Element {
-  const { players, myPlayerID } = useCoveyAppState();
+  const { players, playerPrivileges } = useCoveyAppState();
   const [typedMessage, setTypedMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   // const [participants, setParticipants] = useState<ServerPlayer[]>();
@@ -34,14 +35,13 @@ export default function ChatFeature(): JSX.Element {
   const [playerUserName] = useState<string>(Video.instance()?.userName || '');
   const [chat] = useState<Chat>(Chat.instance());
   const [coveyTownID, setCoveyTownID] = useState<string>('');
-
+  const video = useMaybeVideo();
+  
   useEffect(() => {
-    let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
-    if (!chatPrivilege) {
-      chatPrivilege = true;
-    }
-    setUserChatPrivilege(chatPrivilege);
-  }, [myPlayerID, players]);
+    if (playerPrivileges!==undefined){
+      setUserChatPrivilege(playerPrivileges.chat);
+    }    
+  }, [playerPrivileges]);
 
   useEffect(() => {
     /**
@@ -141,13 +141,10 @@ export default function ChatFeature(): JSX.Element {
     if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
-      sendMessage(typedMessage);
-    }
-
-    if (event.keyCode === 32) {
-      event.preventDefault();
-      event.stopPropagation();
-      setTypedMessage(`${typedMessage} `);
+      if(userChatPrivilege){
+        sendMessage(typedMessage);
+      }
+      
     }
   }
 
@@ -233,6 +230,8 @@ export default function ChatFeature(): JSX.Element {
               placeholder='Type here'
               onKeyDown={onKeyDown}
               value={typedMessage}
+              onFocus={()=>video?.pauseGame()}
+              onBlur={()=>video?.unPauseGame()}
               onChange={event => setTypedMessage(event.target.value)}
             />
             <Button

@@ -6,26 +6,26 @@ import { Message } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import Chat from '../../classes/Chat/Chat';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
+import useMaybeVideo from '../../hooks/useMaybeVideo';
 
 /**
  * Meeting notes feature where participants can add notes that can be accessed by
  * all users in the town.
  */
 export default function MeetingNotes(): JSX.Element {
-  const { players, myPlayerID, currentTownID } = useCoveyAppState();
+  const { currentTownID, playerPrivileges } = useCoveyAppState();
   const [typedNote, setTypedNote] = useState<string>('');
   const [meetingNotes, setMeetingNotes] = useState<Message[]>([]);
   const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
   const [playerUserName] = useState<string>(Video.instance()?.userName || '');
   const [chat] = useState<Chat>(Chat.instance());
+  const video = useMaybeVideo();
 
   useEffect(() => {
-    let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
-    if (!chatPrivilege) {
-      chatPrivilege = true;
-    }
-    setUserMeetingPrivilege(chatPrivilege);
-  }, [players, myPlayerID]);
+    if (playerPrivileges!==undefined){
+      setUserMeetingPrivilege(playerPrivileges.chat);
+    }    
+  }, [playerPrivileges]);
 
   /**
    * This function uses the API to send the meeting note.
@@ -71,13 +71,9 @@ export default function MeetingNotes(): JSX.Element {
     if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
-      sendNote(typedNote);
-    }
-
-    if (event.keyCode === 32) { 
-      event.preventDefault();
-      event.stopPropagation();
-      setTypedNote(`${typedNote} `)
+      if(userMeetingPrivilege){
+        sendNote(typedNote);
+      }
     }
   }
 
@@ -128,6 +124,8 @@ export default function MeetingNotes(): JSX.Element {
               placeholder='Type here'
               onKeyDown={onKeyDown}
               value={typedNote}
+              onFocus={()=>video?.pauseGame()}
+              onBlur={()=>video?.unPauseGame()}
               onChange={event => setTypedNote(event.target.value)}
             />
             <Button
