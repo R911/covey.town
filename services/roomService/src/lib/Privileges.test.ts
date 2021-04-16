@@ -78,7 +78,12 @@ describe('User Privileges Tests', () => {
     await testingTown.addPlayer(player);
     const newPlayer = new Player('test player 2');
     await testingTown.addPlayer(newPlayer);
-    testingTownsStore.banPlayer(testingTown.coveyTownID, testingTown.townUpdatePassword, newPlayer.id, newPlayer.userName);
-    expect( await testingTown.addPlayer(newPlayer)).toBe(undefined);
+    testingTownsStore.banPlayer(
+      testingTown.coveyTownID,
+      testingTown.townUpdatePassword,
+      newPlayer.id,
+      newPlayer.userName,
+    );
+    expect(await testingTown.addPlayer(newPlayer)).toBe(undefined);
   });
 });

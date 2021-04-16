@@ -11,7 +11,7 @@ import Player from '../types/Player';
 export interface TownJoinRequest {
   /** userName of the player that would like to join * */
   userName: string;
-
+  /** UserId of the player who'd like to join *  */
   userId?: string;
   /** ID of the town that the player would like to join * */
   coveyTownID: string;
@@ -41,7 +41,7 @@ export interface TownJoinResponse {
   friendlyName: string;
   /** Is this a private town? * */
   isPubliclyListed: boolean;
-
+  /** maximum allowed capacity of a town */
   capacity: number;
 }
 
@@ -104,6 +104,9 @@ export interface TownUpdateRequest {
   capacity?: number;
 }
 
+/**
+ * Payload sent by an admin to update the privileges of a user.
+ */
 export interface PlayerUpdateRequest {
   coveyTownID: string;
   coveyTownPassword: string;
@@ -115,6 +118,9 @@ export interface PlayerUpdateRequest {
   isAdmin?: boolean;
 }
 
+/**
+ * Payload sent by an admin to ban a user from a town.
+ */
 export interface BanPlayerRequest {
   coveyTownID: string;
   coveyTownPassword: string;
@@ -122,11 +128,17 @@ export interface BanPlayerRequest {
   playerId: string;
 }
 
+/**
+ * Payload sent by an attendee to ask to become an admin.
+ */
 export interface AskToBecomeAdminRequest {
   coveyTownID: string;
   userId: string;
 }
 
+/**
+ * Payload sent by an admin to empty the entire town.
+ */
 export interface EmptyRoomRequest {
   coveyTownID: string;
   coveyTownPassword: string;
