@@ -313,4 +313,64 @@ describe('TownServiceApiSocket', () => {
     });
     await Promise.all([playerRemoved, socketDisconnected]);
   });
+  it('Informs all players when a player asks to become admin', async () => {
+    const town = await createTownForTesting();
+    const joinData = await apiClient.joinTown({
+      coveyTownID: town.coveyTownID,
+      userName: nanoid(),
+      userId: '123',
+    });
+    const joinData2 = await apiClient.joinTown({
+      coveyTownID: town.coveyTownID,
+      userName: nanoid(),
+      userId: '321',
+    });
+    const { socketConnected, playerAskedToBecomeAdmin } = TestUtils.createSocketClient(
+      server,
+      joinData.coveySessionToken,
+      town.coveyTownID,
+    );
+    const {
+      socketConnected: socketConnected2,
+      playerAskedToBecomeAdmin: playerAskedToBecomeAdmin2,
+    } = TestUtils.createSocketClient(server, joinData2.coveySessionToken, town.coveyTownID);
+    await Promise.all([socketConnected, socketConnected2]);
+    await apiClient.askToBecomeAdmin({
+      coveyTownID: town.coveyTownID,
+      userId: '321',
+    });
+    await Promise.all([playerAskedToBecomeAdmin, playerAskedToBecomeAdmin2]);
+    expect((await playerAskedToBecomeAdmin)._id).toBe('321');
+    expect((await playerAskedToBecomeAdmin2)._id).toBe('321');
+  });
+
+  it('Disconnects all players when empty room is called by admin', async () => {
+    const town = await createTownForTesting();
+    const joinData = await apiClient.joinTown({
+      coveyTownID: town.coveyTownID,
+      userName: nanoid(),
+      userId: '123',
+    });
+    const joinData2 = await apiClient.joinTown({
+      coveyTownID: town.coveyTownID,
+      userName: nanoid(),
+      userId: '321',
+    });
+    const { socketConnected, socketDisconnected } = TestUtils.createSocketClient(
+      server,
+      joinData.coveySessionToken,
+      town.coveyTownID,
+    );
+    const {
+      socketConnected: socketConnected2,
+      socketDisconnected: socketDisconnected2,
+    } = TestUtils.createSocketClient(server, joinData2.coveySessionToken, town.coveyTownID);
+    await Promise.all([socketConnected, socketConnected2]);
+    await apiClient.emptyTown({
+      coveyTownID: town.coveyTownID,
+      coveyTownPassword: town.townUpdatePassword,
+      userId: '123',
+    });
+    await Promise.all([socketConnected2, socketDisconnected]);
+  });
 });
