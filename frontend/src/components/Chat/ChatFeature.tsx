@@ -144,6 +144,14 @@ export default function ChatFeature(): JSX.Element {
       event.stopPropagation();
       sendMessage(typedMessage);
     }
+
+    if (event.keyCode === 32) { 
+      console.log('here')
+      event.preventDefault();
+      event.stopPropagation();
+      console.log('here')
+      setTypedMessage(`${typedMessage} `)
+    }
   }
 
   /**
