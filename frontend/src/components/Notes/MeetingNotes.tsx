@@ -12,7 +12,7 @@ import useCoveyAppState from '../../hooks/useCoveyAppState';
  * all users in the town.
  */
 export default function MeetingNotes(): JSX.Element {
-  const { players, myPlayerID, currentTownID } = useCoveyAppState();
+  const { currentTownID, playerPrivileges } = useCoveyAppState();
   const [typedNote, setTypedNote] = useState<string>('');
   const [meetingNotes, setMeetingNotes] = useState<Message[]>([]);
   const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
@@ -20,12 +20,10 @@ export default function MeetingNotes(): JSX.Element {
   const [chat] = useState<Chat>(Chat.instance());
 
   useEffect(() => {
-    let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
-    if (!chatPrivilege) {
-      chatPrivilege = true;
-    }
-    setUserMeetingPrivilege(chatPrivilege);
-  }, [players, myPlayerID]);
+    if (playerPrivileges!==undefined){
+      setUserMeetingPrivilege(playerPrivileges.chat);
+    }    
+  }, [playerPrivileges]);
 
   /**
    * This function uses the API to send the meeting note.
