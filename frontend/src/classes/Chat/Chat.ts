@@ -68,7 +68,6 @@ export default class Chat {
     assert(client);
     this._chatClient = client;
     this._chatClient.on('channelInvited', (channel: Channel) => {
-      console.log('Invited to channel', channel.uniqueName);
       this.joinChannel(channel, { isMeetingNotes: false, isEveryoneChat: false, friendlyName: '' });
     });
     return client;
@@ -100,7 +99,6 @@ export default class Chat {
   private async joinChannel(newChannel: Channel, chatConfig: ChatConfig): Promise<Channel> {
     if (newChannel.status !== 'joined') {
       await newChannel.join();
-      console.log('Joined channel', newChannel.uniqueName);
     }
     if (chatConfig.isMeetingNotes) {
       newChannel.on('messageAdded', this._handleMeetingNoteAdded);
@@ -125,7 +123,6 @@ export default class Chat {
     userNames.sort();
     const joinedIDs = userNames.join('-');
     const chatChannelUniqueName = md5(joinedIDs);
-    console.log(chatChannelUniqueName);
     const chatChannel = this._channelMap.get(chatChannelUniqueName);
     if (!chatChannel) {
       throw Error('Channel channel does not exist');
@@ -142,7 +139,6 @@ export default class Chat {
   }
 
   public async initChat(userNames: string[], chatConfig: ChatConfig): Promise<Message[]> {
-    console.log('Initchat', userNames);
     let chatChannelUniqueName = '';
     let chatChannelFriendlyName = chatConfig.friendlyName;
     let messageItems = [];
@@ -171,13 +167,11 @@ export default class Chat {
         });
       }
 
-      assert(chatChannel);
-      console.log(`chatChannel ${chatChannel.uniqueName}`);
+      assert(chatChannel); 
 
       const joinedChannel = await this.joinChannel(chatChannel, chatConfig);
       userNames.forEach(id => {
-        joinedChannel.invite(id);
-        console.log(`Invited ${id}`);
+        joinedChannel.invite(id); 
       });
       const messageHistory = await joinedChannel.getMessages();
       messageItems = messageHistory.items;
