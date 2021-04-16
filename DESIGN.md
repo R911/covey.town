@@ -3,24 +3,24 @@
 ### Frontend -
 
 - App -
-  ![App.tsx UML](https://i.imgur.com/5fBgiT4.png)
+  ![App.tsx UML](Covey&#32;town&#32;UML&#32;-&#32;Frontend.png)
 
 - Frontend Privileges -
-  ![Frontend Privileges UML](https://i.imgur.com/kidQ5Bw.png)
+  ![Frontend Privileges UML](Covey&#32;town&#32;UML&#32;-&#32;Privileges&#32;Frontend.png)
 
 - Player class frontend -
-  ![Player class frontend UML](https://i.imgur.com/nQvmXRt.png)
+  ![Player class frontend UML](Covey&#32;town&#32;UML&#32;-&#32;Player&#32;Frontend.png)
 
 ### Backend -
 
 - TownController -
-  ![TownController UML](https://i.imgur.com/IntbS58.png)
+  ![TownController UML](Covey&#32;town&#32;UML&#32;-&#32;Controller.png)
 
 - Town Request Handler -
-  ![Town Request Handle UML](https://i.imgur.com/p8xmjDI.png)
+  ![Town Request Handle UML](Covey&#32;town&#32;UML&#32;-&#32;Request&#32;Handler.png)
 
 - Player class backend -
-  ![Player class backend UML](https://i.imgur.com/GcYG7BF.png)
+  ![Player class backend UML](Covey&#32;town&#32;UML&#32;-&#32;Player&#32;Backend.png)
 
 ## CRC Cards
 

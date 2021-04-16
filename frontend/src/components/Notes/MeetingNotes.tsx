@@ -71,6 +71,12 @@ export default function MeetingNotes(): JSX.Element {
       event.stopPropagation();
       sendNote(typedNote);
     }
+
+    if (event.keyCode === 32) { 
+      event.preventDefault();
+      event.stopPropagation();
+      setTypedNote(`${typedNote} `)
+    }
   }
 
   /**
@@ -118,8 +124,8 @@ export default function MeetingNotes(): JSX.Element {
               name='meetingNote'
               variant='unstyled'
               placeholder='Type here'
-              value={typedNote}
               onKeyDown={onKeyDown}
+              value={typedNote}
               onChange={event => setTypedNote(event.target.value)}
             />
             <Button
