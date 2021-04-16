@@ -4,7 +4,9 @@ import { Input, Button, FormControl, FormLabel, Tabs, TabList, Tab } from "@chak
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 
-
+/**
+ * Design for the Login Page for the application.
+ */
 const useStyles = makeStyles(() => createStyles({
   wrapper: {
     display:'grid',
@@ -51,10 +53,17 @@ const useStyles = makeStyles(() => createStyles({
   }
 }));
 
+/**
+ * Interface represent the setLogin for the user authentication.
+ */
 interface SetLoginProps {
   setLogin: (initData: Record<string, string>) => void
 }
 
+/**
+ * This represents the login page for the application where the user needs to
+ * enter the user credentials to login.
+ */
 export default function Login({setLogin} : SetLoginProps): JSX.Element {
   const [userInfo, handleInputChange] = useState({ username: '', password: '', confirmPassword: '' });
   const [isSignUp, setSignUpFlow] = useState(false);
@@ -62,6 +71,9 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
   const classes = useStyles();
   const { apiClient } = useCoveyAppState();
 
+  /**
+   * This is for user login, it takes the user credentials to login.
+   */
   const submitLogin = async () => {
     setError('');
     if (!userInfo.username || !userInfo.password) {
@@ -85,6 +97,9 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
     return true;
   }
 
+  /**
+   * This is for user sign up, it takes the user information to save a record to the DB.
+   */
   const submitSignUp = async () => {
     setError('');
     const letter = /[a-z]/;
@@ -146,6 +161,9 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
     return true;
   }
 
+  /**
+   * This switches the tab between the login and signup.
+   */
   const switchTab = (isSignUpFlow = false) => {
     setSignUpFlow(isSignUpFlow);
     handleInputChange({ username: '', password: '', confirmPassword: '' });
