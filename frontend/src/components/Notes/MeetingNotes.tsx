@@ -6,6 +6,7 @@ import { Message } from 'twilio-chat/lib/message';
 import Video from '../../classes/Video/Video';
 import Chat from '../../classes/Chat/Chat';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
+import useMaybeVideo from '../../hooks/useMaybeVideo';
 
 /**
  * Meeting notes feature where participants can add notes that can be accessed by
@@ -18,6 +19,7 @@ export default function MeetingNotes(): JSX.Element {
   const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
   const [playerUserName] = useState<string>(Video.instance()?.userName || '');
   const [chat] = useState<Chat>(Chat.instance());
+  const video = useMaybeVideo();
 
   useEffect(() => {
     if (playerPrivileges!==undefined){
@@ -126,6 +128,8 @@ export default function MeetingNotes(): JSX.Element {
               placeholder='Type here'
               onKeyDown={onKeyDown}
               value={typedNote}
+              onFocus={()=>video?.pauseGame()}
+              onBlur={()=>video?.unPauseGame()}
               onChange={event => setTypedNote(event.target.value)}
             />
             <Button
