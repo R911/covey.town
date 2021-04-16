@@ -213,11 +213,12 @@ export default function Login({setLogin} : SetLoginProps): JSX.Element {
               />
             </FormControl>
           }
-          {error && <div className={classes.error}>{error}</div>}
-          <Button
-            type="submit"
-            className={classes.button}
+          <div className={classes.error} data-testid="error">{error}</div>
+          <Button 
+            type="submit" 
+            className={classes.button} 
             onClick={isSignUp ? submitSignUp : submitLogin}
+            data-testid="submitButton"
           >
             {isSignUp ? "Sign Up" : "Log In"}
           </Button>
