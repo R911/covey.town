@@ -70,17 +70,14 @@ export default function MenuBar(props: { setMediaError?(error: Error): void}) {
   const { isSharingScreen, toggleScreenShare } = useVideoContext();
   const roomState = useRoomState();
   const isReconnecting = roomState === 'reconnecting';
-  const {myPlayerID, players} = useCoveyAppState();
+  const {playerPrivileges} = useCoveyAppState();
   const [isAdmin, setAdmin] = useState<boolean>(false);
 
   useEffect(() => {
-    const player = players.find(player => player.id === myPlayerID);
-    if(player!==undefined){
-      if(player.privileges!==undefined){
-        setAdmin(player.privileges?.admin);
-      }      
+    if(playerPrivileges!==undefined){
+      setAdmin(playerPrivileges.admin);      
     }
-  },[players]);
+  },[playerPrivileges]);
 
   return (
     <>

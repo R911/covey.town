@@ -26,7 +26,7 @@ import { VideoProvider } from './components/VideoCall/VideoFrontend/components/V
 import ErrorDialog from './components/VideoCall/VideoFrontend/components/ErrorDialog/ErrorDialog';
 import theme from './components/VideoCall/VideoFrontend/theme';
 import { Callback } from './components/VideoCall/VideoFrontend/types';
-import Player, { ServerPlayer, UserLocation } from './classes/Player';
+import Player, { ServerPlayer, UserLocation, UserPrivileges } from './classes/Player';
 import TownsServiceClient, { TownJoinResponse } from './classes/TownsServiceClient';
 import Video from './classes/Video/Video';
 import ChatFeature from './components/Chat/ChatFeature';
@@ -35,7 +35,7 @@ import WorldMap from './components/world/WorldMap';
 import VideoOverlay from './components/VideoCall/VideoOverlay/VideoOverlay';
 
 type CoveyAppUpdate =
-  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean, chatToken: string, capacity: number ,sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
+  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean, chatToken: string, capacity: number ,sessionToken: string, playerPrivileges: UserPrivileges ,myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
   | { action: 'addPlayer'; player: Player }
   | { action: 'playerMoved'; player: Player }
   | { action: 'playerDisconnect'; player: Player }
@@ -62,6 +62,7 @@ function defaultAppState(): CoveyAppState {
     userID: '',
     userName: '',
     socket: null,
+    playerPrivileges: undefined,
     currentLocation: {
       x: 0,
       y: 0,
@@ -91,6 +92,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
     socket: state.socket,
     emitMovement: state.emitMovement,
     apiClient: state.apiClient,
+    playerPrivileges: state.playerPrivileges,
   };
 
   function calculateNearbyPlayers(players: Player[], currentLocation: UserLocation) {
@@ -127,6 +129,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       nextState.emitMovement = update.data.emitMovement;
       nextState.socket = update.data.socket;
       nextState.players = update.data.players;
+      nextState.playerPrivileges = update.data.playerPrivileges;
       break;
     case 'addPlayer':
       nextState.players = nextState.players.concat([update.player]);
@@ -150,6 +153,10 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       updatePlayer = nextState.players.find((p) => p.id === update.player.id);
       if (updatePlayer) {
         updatePlayer.privileges = update.player.privileges;
+        if(updatePlayer.id===nextState.myPlayerID){
+          nextState.playerPrivileges = update.player.privileges;
+        }
+        
       } else {
         nextState.players = nextState.players.concat([update.player]);
       }
@@ -199,6 +206,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       };
       nextState.emitMovement= () => {};
       nextState.apiClient= new TownsServiceClient();
+      nextState.playerPrivileges = undefined;
       break;
     case 'doLogin':
       nextState.authToken = update.data.authToken;
@@ -219,6 +227,10 @@ async function GameController(
   const gamePlayerID = initData.coveyUserID;
   const sessionToken = initData.coveySessionToken;
   const chatToken = initData.providerChatToken;
+  const gamePlayer = initData.currentPlayers.find(player=>player._id===gamePlayerID);
+  assert(gamePlayer);
+  assert(gamePlayer.privileges);
+  const playerPrivileges = gamePlayer.privileges;
   const url = process.env.REACT_APP_TOWNS_SERVICE_URL;
   assert(url);
   const video = Video.instance();
@@ -266,6 +278,7 @@ async function GameController(
       townID: video.coveyTownID,
       myPlayerID: gamePlayerID,
       townIsPubliclyListed: video.isPubliclyListed,
+      playerPrivileges,
       capacity: townCapacity,
       emitMovement,
       socket,
