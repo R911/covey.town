@@ -270,7 +270,7 @@ describe('Town Selection - depends on Part 1 passing', () => {
             if (row) {
               const button = within(row)
                 .getByRole('button');
-              const username = nanoid();
+              // const username = nanoid();
               userEvent.click(button);
               // await waitFor(() => expect(mockVideoSetup)
               //   .toBeCalledWith(username, town.coveyTownID));
@@ -294,7 +294,7 @@ describe('Town Selection - depends on Part 1 passing', () => {
             if (row) {
               const button = within(row)
                 .getByRole('button');
-              const username = nanoid();
+              // const username = nanoid();
               userEvent.click(button);
               await waitFor(() => expect(mockVideoSetup)
                 .not
@@ -346,7 +346,7 @@ describe('Town Selection - depends on Part 1 passing', () => {
             if (row) {
               const button = within(row)
                 .getByRole('button');
-              const username = nanoid();
+              // const username = nanoid();
               userEvent.click(button);
               await waitFor(() => expect(mockVideoSetup)
                 .toBeCalled());
