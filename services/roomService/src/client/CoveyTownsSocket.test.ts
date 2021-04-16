@@ -371,6 +371,6 @@ describe('TownServiceApiSocket', () => {
       coveyTownPassword: town.townUpdatePassword,
       userId: '123',
     });
-    await Promise.all([socketConnected2, socketDisconnected]);
+    await Promise.all([socketDisconnected2, socketDisconnected]);
   });
 });
