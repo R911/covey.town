@@ -43,6 +43,7 @@ function wrappedLoginUI() {
     userName: '',
     userID: '',
     socket: null,
+    playerPrivileges: undefined,
     currentLocation: {
       x: 0,
       y: 0,

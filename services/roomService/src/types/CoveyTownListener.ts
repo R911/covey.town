@@ -27,9 +27,20 @@ export default interface CoveyTownListener {
    */
   onTownDestroyed(): void;
 
+  /**
+   * Called when a user is forcefully banned/removed from a town by an admin.
+   */
   onPlayerRemoved(): void;
 
+  /**
+   * Called when the privileges of a player are updated
+   * @param updatedPlayer the player who's privileges are updated
+   */
   onPlayerUpdated(updatedPlayer: Player): void;
 
+  /**
+   * Called when an attendee asks to become an admin inside a town
+   * @param player the player who asked to be admin
+   */
   onPlayerAskToBecomeAdmin(player: Player): void;
 }
