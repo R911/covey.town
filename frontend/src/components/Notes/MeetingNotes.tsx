@@ -12,7 +12,7 @@ import useCoveyAppState from '../../hooks/useCoveyAppState';
  * all users in the town.
  */
 export default function MeetingNotes(): JSX.Element {
-  const { players, myPlayerID, currentTownID } = useCoveyAppState();
+  const { currentTownID, playerPrivileges } = useCoveyAppState();
   const [typedNote, setTypedNote] = useState<string>('');
   const [meetingNotes, setMeetingNotes] = useState<Message[]>([]);
   const [userMeetingPrivilege, setUserMeetingPrivilege] = useState<boolean>(true);
@@ -20,12 +20,10 @@ export default function MeetingNotes(): JSX.Element {
   const [chat] = useState<Chat>(Chat.instance());
 
   useEffect(() => {
-    let chatPrivilege = players.find(player => player.id === myPlayerID)?.privileges?.chat;
-    if (!chatPrivilege) {
-      chatPrivilege = true;
-    }
-    setUserMeetingPrivilege(chatPrivilege);
-  }, [players, myPlayerID]);
+    if (playerPrivileges!==undefined){
+      setUserMeetingPrivilege(playerPrivileges.chat);
+    }    
+  }, [playerPrivileges]);
 
   /**
    * This function uses the API to send the meeting note.
@@ -72,6 +70,12 @@ export default function MeetingNotes(): JSX.Element {
       event.preventDefault();
       event.stopPropagation();
       sendNote(typedNote);
+    }
+
+    if (event.keyCode === 32) { 
+      event.preventDefault();
+      event.stopPropagation();
+      setTypedNote(`${typedNote} `)
     }
   }
 
@@ -120,8 +124,8 @@ export default function MeetingNotes(): JSX.Element {
               name='meetingNote'
               variant='unstyled'
               placeholder='Type here'
-              value={typedNote}
               onKeyDown={onKeyDown}
+              value={typedNote}
               onChange={event => setTypedNote(event.target.value)}
             />
             <Button

@@ -46,6 +46,7 @@ function wrappedTownSettings() {
     currentTownIsPubliclyListed: false,
     currentTownFriendlyName: '',
     currentTownCapacity: 50,
+    playerPrivileges: undefined,
     sessionToken: '',
     userName: '',
     socket: null,
