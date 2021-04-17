@@ -70,14 +70,3 @@ Github repo - https://github.com/neelgeek/covey.town
 Heroku app - https://covey-town-2.herokuapp.com/
 Netlify app - https://musing-curie-20e41c.netlify.app/
 Project demo - [Video](https://northeastern.sharepoint.com/:v:/s/CS5500-Spring2021-FSE-Team42/EUqcyR-yWrJKgCZsPJkJuWUB5fwkbp-CCC8hEKhb4wO-9A?e=1rMCzg)
-
-### Database envoirnment variables -
-
-Use this to connect to the remote database
-
-| Config Value        | Description                                                      |
-| ------------------- | ---------------------------------------------------------------- |
-| `DATABASE_HOST`     | ec2-52-45-73-150.compute-1.amazonaws.com                         |
-| `DATABASE`          | d15i4g1je65cnj                                                   |
-| `DATABASE_USERNAME` | rtvkmfjyjkfeie                                                   |
-| `DATABASE_PASSWORD` | 2074db8ca8b1dd6a378d550402595d629595d6f55f00b2b722d4febacb4c11f7 |
